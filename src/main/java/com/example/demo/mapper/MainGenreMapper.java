@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 // Create a mapper to avoid duplication
 @Component
@@ -22,8 +24,8 @@ public class MainGenreMapper {
                 .genres(mainGenre.getGenres() != null
                         ? mainGenre.getGenres().stream()
                         .map(genreMapper::toDto)
-                        .toList()
-                        : List.of())
+                        .collect(Collectors.toSet())
+                        : Set.of())
                 .build();
     }
 }

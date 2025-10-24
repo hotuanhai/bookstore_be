@@ -14,7 +14,7 @@ import java.util.Set;
 public class BookDto {
     private Long id;
     private String title;
-    private Set<String> authors;
+    private Set<AuthorSummaryDto> authors;
     private Set<String> genres;
     private String imageUrl;
     private int price;

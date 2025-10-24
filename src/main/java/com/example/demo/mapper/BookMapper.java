@@ -8,6 +8,8 @@ import com.example.demo.entity.book.BookEdition;
 import com.example.demo.entity.book.BookReprint;
 import com.example.demo.entity.genre.Genre;
 import com.example.demo.enums.BookStatus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -16,6 +18,12 @@ import java.util.stream.Collectors;
 
 @Component
 public class BookMapper {
+    private final AuthorMapper authorMapper;
+
+    public BookMapper(@Lazy AuthorMapper authorMapper) {
+        this.authorMapper = authorMapper;
+    }
+
     public BookSummaryDto toSummaryDto(Book book) {
         //Get latest edition
         BookEdition latestEdition = getLatestEdition(book);
@@ -43,7 +51,7 @@ public class BookMapper {
         return BookDto.builder()
                 .id(book.getId())
                 .title(latestEdition.getTitle())
-                .authors(latestEdition.getAuthors().stream().map(Author::getName).collect(Collectors.toSet()))
+                .authors(latestEdition.getAuthors().stream().map(authorMapper::toSummaryDto).collect(Collectors.toSet()))
                 .genres(book.getGenres().stream().map(Genre::getName).collect(Collectors.toSet()))
                 .imageUrl(bestReprint.getImageUrl())
                 .price(bestReprint.getPrice())

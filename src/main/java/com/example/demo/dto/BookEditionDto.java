@@ -21,6 +21,6 @@ public class BookEditionDto {
     private Integer publishedYear;
     private String description;
     private String translator;
-    private Set<AuthorDto> authors;
+    private Set<AuthorSummaryDto> authors;
     private List<BookReprintDto> reprints;  // Includes the first reprint
 }

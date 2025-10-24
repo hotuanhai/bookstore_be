@@ -151,6 +151,8 @@ public class BookService {
         return bookEditionMapper.toDto(savedEdition);
     }
 
+
+
     // Change status from out-of-stock to available
     private void updateBookStatusIfNeeded(Book book) {
         boolean hasAvailableStock = book.getEditions().stream()
