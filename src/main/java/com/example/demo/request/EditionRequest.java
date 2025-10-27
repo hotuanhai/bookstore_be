@@ -19,7 +19,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateEditionRequest {
+public class EditionRequest {
     //edition
 
     @NotBlank(message = "Title is required")
@@ -50,7 +50,5 @@ public class CreateEditionRequest {
     private int discountPercentage;
     private LocalDateTime discountStartDate;
     private LocalDateTime discountEndDate;
-
-
 }
 

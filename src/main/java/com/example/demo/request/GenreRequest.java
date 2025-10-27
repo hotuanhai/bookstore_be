@@ -16,8 +16,4 @@ public class GenreRequest {
     @NotNull(message = "Genre name is required")
     @NotBlank(message = "Genre name cannot be blank")
     private String name;
-//
-//    @NotNull(message = "Main genre is required")
-//    @NotBlank(message = "Main genre cannot be blank")
-//    private Long mainGenreId;
 }

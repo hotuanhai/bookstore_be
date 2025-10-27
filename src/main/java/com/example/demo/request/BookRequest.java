@@ -37,16 +37,6 @@ public class BookRequest {
 
     private String description;
 
-/*
-    @NotNull(message = "Edition number is required")
-    @Min(value = 0, message = "Edition number cannot be negative")
-    private Integer editionNo;
-
-    @NotNull(message = "Reprint number is required")
-    @Min(value = 0, message = "Reprint number cannot be negative")
-    private Integer reprintNo;
-*/
-
     @NotNull(message = "Book isbn is required")
     @NotBlank(message = "Book isbn cannot be blank")
     private String isbn;
@@ -79,6 +69,6 @@ public class BookRequest {
         if (discountStartDate != null && discountEndDate != null) {
             return discountEndDate.isAfter(discountStartDate);
         }
-        return true; // skip if one is null (let @NotNull handle it)
+        return true;
     }
 }

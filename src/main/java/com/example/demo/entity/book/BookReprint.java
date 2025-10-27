@@ -33,16 +33,11 @@ public class BookReprint {
 
     private String reprintNotes;
 
-    @Builder.Default
-    private int discountPercentage = 0;
+    private int discountPercentage;
 
-    @Builder.Default
-    private LocalDateTime discountStartDate = null;
+    private LocalDateTime discountStartDate;
 
-    @Builder.Default
-    private LocalDateTime discountEndDate = null;
-
-//    private LocalDateTime printDate;
+    private LocalDateTime discountEndDate;
 
     @Enumerated(EnumType.STRING)
     private BookStatus status;

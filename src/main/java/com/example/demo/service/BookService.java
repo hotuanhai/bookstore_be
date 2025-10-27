@@ -15,17 +15,19 @@ import com.example.demo.enums.BookStatus;
 import com.example.demo.exception.AuthorNotFoundException;
 import com.example.demo.exception.BookNotFoundException;
 import com.example.demo.exception.DuplicateIsbnException;
+import com.example.demo.exception.GenreNotFoundException;
 import com.example.demo.mapper.BookEditionMapper;
 import com.example.demo.mapper.BookMapper;
 import com.example.demo.request.BookRequest;
 import com.example.demo.entity.Author;
-import com.example.demo.request.CreateEditionRequest;
+import com.example.demo.request.EditionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -86,7 +88,7 @@ public class BookService {
     }
 
     @Transactional
-    public BookEditionDto addEditionToBook(Long bookId, CreateEditionRequest request) {
+    public BookEditionDto addEditionToBook(Long bookId, EditionRequest request) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + bookId));
 
@@ -151,7 +153,49 @@ public class BookService {
         return bookEditionMapper.toDto(savedEdition);
     }
 
+    @Transactional(readOnly = true)
+    public Page<BookSummaryDto> searchBooks(String keyword, Pageable pageable){
+        return bookRepository.searchByTitleOrAuthor(keyword, pageable);
+    }
 
+    @Transactional(readOnly = true)
+    public Page<BookSummaryDto> getBooksByGenre(Long genreId, Pageable pageable){
+        Genre genre = genreRepository.findById(genreId)
+                .orElseThrow(() -> new GenreNotFoundException("Genre not found with id: " + genreId));
+        return bookRepository.findBooksByGenreId(genreId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BookSummaryDto> getBooksByAuthor(Long authorId, Pageable pageable){
+        Author author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + authorId));
+        return bookRepository.findBooksByAuthorId(authorId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BookSummaryDto> getDiscountedBooks(Pageable pageable){
+        return bookRepository.findBooksWithActiveDiscount(LocalDateTime.now(), pageable);
+    }
+
+    @Transactional
+    public BookDto updateBookStatus(Long bookId, BookStatus newStatus){
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + bookId));
+
+        book.setStatus(newStatus);
+        Book updated = bookRepository.save(book);
+        return bookMapper.toDto(updated);
+    }
+
+    @Transactional
+    public void deleteBook(Long bookId){
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + bookId));
+
+        book.setStatus(BookStatus.DELETED);
+        bookRepository.save(book);
+        //bookRepository.delete(book);
+    }
 
     // Change status from out-of-stock to available
     private void updateBookStatusIfNeeded(Book book) {
