@@ -29,5 +29,5 @@ public class Author {
     private String nationality;
 
     @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
-    private Set<BookEdition> bookEditions;
+    private Set<Book> books;
 }

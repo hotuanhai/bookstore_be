@@ -4,30 +4,30 @@ import com.example.demo.dto.BookEditionDto;
 import com.example.demo.entity.book.BookEdition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class BookEditionMapper {
-    private final AuthorMapper authorMapper;
-    private final BookReprintMapper bookReprintMapper;
-
     public BookEditionDto toDto(BookEdition bookEdition){
         return BookEditionDto.builder()
                 .id(bookEdition.getId())
-                .bookId(bookEdition.getBook().getId())
-                .editionNo(bookEdition.getEditionNo())
-                .title(bookEdition.getTitle())
+                .name(bookEdition.getName())
                 .isbn(bookEdition.getIsbn())
                 .dimension(bookEdition.getDimension())
                 .numberOfPages(bookEdition.getNumberOfPages())
+                .publisher(bookEdition.getPublisher())
                 .publishedYear(bookEdition.getPublishedYear())
                 .description(bookEdition.getDescription())
+                .language(bookEdition.getLanguage())
                 .translator(bookEdition.getTranslator())
-                .authors(bookEdition.getAuthors().stream().map(authorMapper::toSummaryDto)
-                        .collect(Collectors.toSet()))
-                .reprints(bookEdition.getReprints().stream().map(bookReprintMapper::toDto)
-                        .toList())
+                .format(bookEdition.getFormat())
+                .price(bookEdition.getPrice())
+                .stock(bookEdition.getStock())
+                .imageUrl(bookEdition.getImageUrl())
+                .discountPercentage(bookEdition.getDiscountPercentage())
+                .discountStartDate(bookEdition.getDiscountStartDate())
+                .discountEndDate(bookEdition.getDiscountEndDate())
+                .status(bookEdition.getStatus())
                 .build();
     }
 }

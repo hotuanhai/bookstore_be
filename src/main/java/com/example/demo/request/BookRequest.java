@@ -1,6 +1,7 @@
 package com.example.demo.request;
 
 import com.example.demo.enums.BookStatus;
+import com.example.demo.enums.EditionFormat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
@@ -24,6 +25,14 @@ public class BookRequest {
 
     @NotEmpty(message = "At least one genre is required")
     private Set<Long> genreIds;
+
+    @Enumerated(EnumType.STRING)
+    private BookStatus status;
+
+    //edition
+    @NotNull(message = "Edition name is required")
+    @NotBlank(message = "Edition name cannot be blank")
+    private String name;
 
     @NotEmpty(message = "Book image is required")
     private String imageUrl;
@@ -51,11 +60,13 @@ public class BookRequest {
     private String dimension;
 
     @Enumerated(EnumType.STRING)
-    private BookStatus status;
+    private BookStatus editionStatus;
+
+    private String language;
 
     private String translator;
 
-    private String note;
+    private EditionFormat format;
 
     @Builder.Default
     private Integer discountPercentage = 0;

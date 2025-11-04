@@ -9,7 +9,6 @@ import com.example.demo.dto.BookEditionDto;
 import com.example.demo.dto.BookSummaryDto;
 import com.example.demo.entity.book.Book;
 import com.example.demo.entity.book.BookEdition;
-import com.example.demo.entity.book.BookReprint;
 import com.example.demo.entity.genre.Genre;
 import com.example.demo.enums.BookStatus;
 import com.example.demo.exception.AuthorNotFoundException;
@@ -56,32 +55,26 @@ public class BookService {
 
         //Create edition
         BookEdition edition = BookEdition.builder()
-                .title(request.getTitle())
+                .name(request.getName())
+                .isbn(request.getIsbn())
+                .dimension(request.getDimension())
+                .numberOfPages(request.getNumberOfPages())
                 .publishedYear(request.getPublishedYear())
                 .description(request.getDescription())
-                .editionNo(1)
-                .isbn(request.getIsbn())
-                .numberOfPages(request.getNumberOfPages())
+                .language(request.getLanguage())
                 .translator(request.getTranslator())
-                .dimension(request.getDimension())
-                .authors(new HashSet<>(authorRepository.findAllById(request.getAuthorIds())))
-                .build();
-
-        //Create reprint
-        BookReprint reprint = BookReprint.builder()
-                .reprintNo(1)
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .imageUrl(request.getImageUrl())
                 .status(request.getStatus())
+                .format(request.getFormat())
                 .discountPercentage(request.getDiscountPercentage())
                 .discountStartDate(request.getDiscountStartDate())
                 .discountEndDate(request.getDiscountEndDate())
                 .build();
 
-        // Link relationships (both sides)
+        // Link relationships
         book.addEdition(edition);
-        edition.addReprint(reprint);
 
         Book saved = bookRepository.save(book);
         return bookMapper.toDto(saved);
@@ -92,52 +85,30 @@ public class BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + bookId));
 
-        // Calculate next edition number
-        int nextEditionNo = book.getEditions().stream()
-                .mapToInt(BookEdition::getEditionNo)
-                .max()
-                .orElse(0) + 1;
-
         // Validate ISBN uniqueness
         if (bookEditionRepository.existsByIsbn(request.getIsbn())) {
             throw new DuplicateIsbnException("ISBN already exists: " + request.getIsbn());
         }
 
-        // Find authors
-        Set<Author> authors = new HashSet<>(authorRepository.findAllById(request.getAuthorIds()));
-        if (authors.size() != request.getAuthorIds().size()) {
-            throw new AuthorNotFoundException("Some authors not found");
-        }
-
-        // Create edition
         BookEdition edition = BookEdition.builder()
-                .book(book)
-                .editionNo(nextEditionNo)
-                .title(request.getTitle())
+                .name(request.getName())
                 .isbn(request.getIsbn())
                 .dimension(request.getDimension())
                 .numberOfPages(request.getNumberOfPages())
                 .publishedYear(request.getPublishedYear())
                 .description(request.getDescription())
+                .language(request.getLanguage())
                 .translator(request.getTranslator())
-                .authors(authors)
-                .build();
-
-        // Create reprint
-        BookReprint firstReprint = BookReprint.builder()
-                .reprintNo(1)
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .imageUrl(request.getImageUrl())
                 .status(request.getStatus())
-                .reprintNotes(request.getReprintNotes())
+                .format(request.getFormat())
                 .discountPercentage(request.getDiscountPercentage())
                 .discountStartDate(request.getDiscountStartDate())
                 .discountEndDate(request.getDiscountEndDate())
                 .build();
-
-        // Link relationships (both sides)
-        edition.addReprint(firstReprint);
+        // Link relationships
         book.addEdition(edition);
 
         Book savedBook = bookRepository.save(book);
@@ -162,7 +133,7 @@ public class BookService {
     public Page<BookSummaryDto> getBooksByGenre(Long genreId, Pageable pageable){
         Genre genre = genreRepository.findById(genreId)
                 .orElseThrow(() -> new GenreNotFoundException("Genre not found with id: " + genreId));
-        return bookRepository.findBooksByGenreId(genreId, pageable);
+        return bookRepository.findByGenres_Id(genreId, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -200,7 +171,6 @@ public class BookService {
     // Change status from out-of-stock to available
     private void updateBookStatusIfNeeded(Book book) {
         boolean hasAvailableStock = book.getEditions().stream()
-                .flatMap(e -> e.getReprints().stream())
                 .anyMatch(r -> r.getStock() > 0);
 
         if (hasAvailableStock && book.getStatus() == BookStatus.OUT_OF_STOCK) {

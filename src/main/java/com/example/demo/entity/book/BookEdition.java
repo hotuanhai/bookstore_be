@@ -1,12 +1,11 @@
 package com.example.demo.entity.book;
 
-import com.example.demo.entity.Author;
 import com.example.demo.enums.BookStatus;
+import com.example.demo.enums.EditionFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -24,46 +23,44 @@ public class BookEdition {
     private Book book;
 
     @Column(nullable = false)
-    private String title;
-
-    @ManyToMany
-    @JoinTable(
-            name = "book_edition_author",
-            joinColumns = @JoinColumn(name = "edition_id"),
-            inverseJoinColumns = @JoinColumn(name = "author_id")
-    )
-    private Set<Author> authors = new HashSet<>();
+    private String name;
 
     @Column(nullable = false, unique = true)
     private String isbn;
 
-    @Column(nullable = false)
-    private int editionNo;
-
     private String dimension;
 
     private int numberOfPages;
+
+    private String publisher;
 
     private int publishedYear;
 
     @Lob
     private String description;
 
+    private String language;
+
     private String translator;
 
-    @OneToMany(mappedBy = "edition", cascade = CascadeType.ALL)
-    private Set<BookReprint> reprints = new HashSet<>();
+    @Column(nullable = false)
+    private int price;
 
+    @Column(nullable = false)
+    private int stock;
 
-    public void addReprint(BookReprint reprint) {
-        if (reprints == null) {
-            reprints = new HashSet<>();
-        }
-        reprints.add(reprint);      // Parent → Child
-        reprint.setEdition(this);   // Child → Parent
-    }
-    public void removeReprint(BookReprint reprint) {
-        reprints.remove(reprint);
-        reprint.setEdition(null);
-    }
+    private String imageUrl;
+
+    private int discountPercentage;
+
+    private LocalDateTime discountStartDate;
+
+    private LocalDateTime discountEndDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EditionFormat format;
+
+    @Enumerated(EnumType.STRING)
+    private BookStatus status;
 }

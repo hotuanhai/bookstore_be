@@ -20,8 +20,7 @@ public class AuthorMapper {
                 .nationality(author.getNationality())
                 .description(author.getDescription())
                 .imageUrl(author.getImageUrl())
-                .bookSummaryDtos(author.getBookEditions().stream()
-                        .map(BookEdition::getBook)
+                .bookSummaryDtos(author.getBooks().stream()
                         .map(bookMapper::toSummaryDto).collect(Collectors.toSet()))
                 .build();
     }

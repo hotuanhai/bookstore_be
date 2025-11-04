@@ -1,10 +1,12 @@
 package com.example.demo.entity.book;
 
+import com.example.demo.entity.Author;
 import com.example.demo.entity.genre.Genre;
 import com.example.demo.enums.BookStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,6 +21,10 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "series_id")
+    private Series series;
+
     @ManyToMany
     @JoinTable(
             name = "book_genre",
@@ -27,11 +33,26 @@ public class Book {
     )
     private Set<Genre> genres;
 
+    @ManyToMany
+    @JoinTable(
+            name = "book_author",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id")
+    )
+    private Set<Author> authors = new HashSet<>();
+
+    @Column(nullable = false)
+    private String title;
+
     @Enumerated(EnumType.STRING)
     private BookStatus status;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private Set<BookEdition> editions = new HashSet<>();
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
 
     public void addEdition(BookEdition edition) {

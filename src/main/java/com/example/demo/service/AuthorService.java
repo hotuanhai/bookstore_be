@@ -27,7 +27,7 @@ public class AuthorService{
                 .imageUrl(request.getImageUrl())
                 .description(request.getDescription())
                 .nationality(request.getNationality())
-                .bookEditions(new HashSet<>())
+                .books(new HashSet<>())
                 .build();
 
         Author saved = authorRepository.save(author);

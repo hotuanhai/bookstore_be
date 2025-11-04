@@ -17,18 +17,17 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
-                e.title,
-                r.price,
-                r.imageUrl,
-                r.status,
-                r.discountPercentage,
-                r.discountStartDate,
-                r.discountEndDate
+                b.title,
+                e.imageUrl,
+                e.price,
+                b.status,
+                e.discountPercentage,
+                e.discountStartDate,
+                e.discountEndDate
             )
             FROM Book b
             JOIN b.editions e
-            JOIN e.reprints r
-            JOIN e.authors a
+            JOIN b.authors a
             WHERE (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
                 OR LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
               AND b.status NOT IN ('ARCHIVED', 'DELETED')
@@ -38,38 +37,36 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
-                e.title,
-                r.price,
-                r.imageUrl,
-                r.status,
-                r.discountPercentage,
-                r.discountStartDate,
-                r.discountEndDate
+                b.title,
+                e.imageUrl,
+                e.price,
+                b.status,
+                e.discountPercentage,
+                e.discountStartDate,
+                e.discountEndDate
             )
             FROM Book b
-            JOIN b.genres g
             JOIN b.editions e
-            JOIN e.reprints r
+            JOIN b.genres g
             WHERE g.id = :genreId
               AND b.status NOT IN ('ARCHIVED', 'DELETED')
             """)
-    Page<BookSummaryDto> findBooksByGenreId(@Param("genreId") Long genreId, Pageable pageable);
+    Page<BookSummaryDto> findByGenres_Id(@Param("genreId") Long genreId, Pageable pageable);
 
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
-                e.title,
-                r.price,
-                r.imageUrl,
-                r.status,
-                r.discountPercentage,
-                r.discountStartDate,
-                r.discountEndDate
+                b.title,
+                e.imageUrl,
+                e.price,
+                b.status,
+                e.discountPercentage,
+                e.discountStartDate,
+                e.discountEndDate
             )
             FROM Book b
             JOIN b.editions e
-            JOIN e.authors a
-            JOIN e.reprints r
+            JOIN b.authors a
             WHERE a.id = :authorId
               AND b.status NOT IN ('ARCHIVED', 'DELETED')
             """)
@@ -78,20 +75,18 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
-                e.title,
-                r.price,
-                r.imageUrl,
-                r.status,
-                r.discountPercentage,
-                r.discountStartDate,
-                r.discountEndDate
+                b.title,
+                e.imageUrl,
+                e.price,
+                b.status,
+                e.discountPercentage,
+                e.discountStartDate,
+                e.discountEndDate
             )
             FROM Book b
             JOIN b.editions e
-            JOIN e.reprints r
-            WHERE r.discountEndDate >= :now
-            AND r.status = 'AVAILABLE'
+            WHERE e.discountEndDate >= :now
+            AND b.status = 'AVAILABLE'
             """)
     Page<BookSummaryDto> findBooksWithActiveDiscount(@Param("now") LocalDateTime now, Pageable pageable);
-
 }
