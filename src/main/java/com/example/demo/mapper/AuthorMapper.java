@@ -5,7 +5,6 @@ import com.example.demo.dto.AuthorSummaryDto;
 import com.example.demo.entity.Author;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import com.example.demo.entity.book.BookEdition;
 import java.util.stream.Collectors;
 
 @Component

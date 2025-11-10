@@ -4,6 +4,7 @@ import com.example.demo.dao.AuthorRepository;
 import com.example.demo.dto.AuthorDto;
 import com.example.demo.dto.AuthorSummaryDto;
 import com.example.demo.entity.Author;
+import com.example.demo.exception.AuthorNotFoundException;
 import com.example.demo.mapper.AuthorMapper;
 import com.example.demo.request.AuthorRequest;
 import lombok.RequiredArgsConstructor;
@@ -59,4 +60,11 @@ public class AuthorService{
         return authors.map(authorMapper::toSummaryDto);
     }
 
+    @Transactional(readOnly = true)
+    public AuthorDto getAuthorById(Long authorId) {
+        Author author = authorRepository.findAuthorWithBooks(authorId)
+                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id " + authorId));
+
+        return authorMapper.toDto(author);
+    }
 }

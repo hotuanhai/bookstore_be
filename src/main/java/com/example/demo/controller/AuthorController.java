@@ -2,9 +2,11 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.AuthorDto;
 import com.example.demo.dto.AuthorSummaryDto;
+import com.example.demo.dto.CommentDto;
 import com.example.demo.request.AuthorRequest;
 import com.example.demo.response.ApiResponse;
 import com.example.demo.service.AuthorService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -20,36 +22,38 @@ public class AuthorController {
     private final AuthorService authorService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<AuthorDto>> addAuthor(@RequestBody AuthorRequest request) {
+    public ResponseEntity<ApiResponse<AuthorDto>> addAuthor(@Valid @RequestBody AuthorRequest request) {
         AuthorDto dto = authorService.addAuthor(request);
 
-        ApiResponse<AuthorDto> response = new ApiResponse<>();
-        response.setStatus(0); // 0 = success
-        response.setMessage("Author added successfully");
-        response.setData(dto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.created(dto, "Author created successfully"));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<AuthorDto>> updateAuthor(@PathVariable Long id, @RequestBody AuthorRequest request) {
+    public ResponseEntity<ApiResponse<AuthorDto>> updateAuthor(@PathVariable Long id,@Valid @RequestBody AuthorRequest request) {
         AuthorDto dto = authorService.updateAuthor(id, request);
 
-        ApiResponse<AuthorDto> response = new ApiResponse<>();
-        response.setStatus(0); // 0 = success
-        response.setMessage("Author added successfully");
-        response.setData(dto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.ok(ApiResponse.success(dto,"Author updated successfully"));
     }
 
     @GetMapping("/search")
-    public Page<AuthorSummaryDto> searchAuthors(@RequestParam String keyword, Pageable pageable) {
-        return authorService.searchAuthors(keyword, pageable);
+    public ResponseEntity<ApiResponse<Page<AuthorSummaryDto>>> searchAuthors(@RequestParam String keyword, Pageable pageable) {
+        Page<AuthorSummaryDto> dtos = authorService.searchAuthors(keyword, pageable);
+
+        return ResponseEntity.ok(ApiResponse.success(dtos,"Author searched successfully"));
     }
 
     @GetMapping
-    public Page<AuthorSummaryDto> getAllAuthors(Pageable pageable) {
-        return authorService.getAllAuthors(pageable);
+    public ResponseEntity<ApiResponse<Page<AuthorSummaryDto>>> getAllAuthors(Pageable pageable) {
+        Page<AuthorSummaryDto> dtos = authorService.getAllAuthors(pageable);
+
+        return ResponseEntity.ok(ApiResponse.success(dtos,"Authors fetched successfully"));
+    }
+
+    @GetMapping("/{authorId}")
+    public ResponseEntity<ApiResponse<AuthorDto>> getAuthorById(@PathVariable Long authorId) {
+        AuthorDto dto = authorService.getAuthorById(authorId);
+        return ResponseEntity.ok(ApiResponse.success(dto, "Author fetched successfully"));
     }
 }

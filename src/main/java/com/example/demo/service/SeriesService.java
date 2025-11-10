@@ -29,8 +29,6 @@ public class SeriesService {
         Series series = Series.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
 
         Set<Book> books = new HashSet<>();
@@ -53,7 +51,6 @@ public class SeriesService {
 
         series.setName(request.getName());
         series.setDescription(request.getDescription());
-        series.setUpdatedAt(LocalDateTime.now());
 
         // Ensure bidirectional
         if (series.getBooks() != null) {

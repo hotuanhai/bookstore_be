@@ -1,7 +1,6 @@
 package com.example.demo.entity;
 
 import com.example.demo.entity.book.Book;
-import com.example.demo.entity.book.BookEdition;
 import jakarta.persistence.*;
 import lombok.*;
 

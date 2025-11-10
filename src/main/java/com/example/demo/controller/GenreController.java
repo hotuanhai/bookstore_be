@@ -24,19 +24,6 @@ import java.util.Set;
 public class GenreController {
     private final GenreService genreService;
 
-//    @PostMapping
-//    public ResponseEntity<ApiResponse<GenreDto>> addGenre(@Valid @RequestBody GenreRequest request){
-//        Genre genre = genreService.addGenre(request);
-//        GenreDto dto = GenreDto.builder()
-//                .id(genre.getId())
-//                .name(genre.getName())
-//                .mainGenreId(genre.getMainGenre().getId())
-//                .build();
-//        ApiResponse<GenreDto> response =
-//                new ApiResponse<>(201, "Genre created successfully", dto);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-//    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteGenre(Long id){
         genreService.deleteGenre(id);
