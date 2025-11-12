@@ -8,7 +8,6 @@ import com.example.demo.response.ApiResponse;
 import com.example.demo.service.AuthorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
