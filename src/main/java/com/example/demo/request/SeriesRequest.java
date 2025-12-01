@@ -17,7 +17,4 @@ public class SeriesRequest {
     @NotBlank(message = "Series name cannot be blank")
     private String name;
     private String description;
-    @NotNull(message = "Book IDs cannot be null")
-    @NotEmpty(message = "Series must contain at least one book")
-    private Set<Long> bookIds;
 }

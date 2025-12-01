@@ -24,7 +24,7 @@ public class BookRequest {
     private Set<Long> authorIds;
 
     @NotEmpty(message = "At least one genre is required")
-    private Set<Long> genreIds;
+    private Set<String> genres;
 
     @Enumerated(EnumType.STRING)
     private BookStatus status;
@@ -41,9 +41,6 @@ public class BookRequest {
     @Min(value = 0, message = "Price cannot be negative")
     private Integer price = 0;
 
-    @Min(value = 0, message = "Price cannot be negative")
-    private Integer numberOfPages = 0;
-
     private String description;
 
     @NotNull(message = "Book isbn is required")
@@ -57,14 +54,12 @@ public class BookRequest {
     @Min(value = 1000, message = "Published year must be valid")
     private Integer publishedYear;
 
-    private String dimension;
+    private String publisher;
 
     @Enumerated(EnumType.STRING)
     private BookStatus editionStatus;
 
     private String language;
-
-    private String translator;
 
     private EditionFormat format;
 

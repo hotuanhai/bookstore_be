@@ -5,15 +5,20 @@ import com.example.demo.dto.security.LoginUserDto;
 import com.example.demo.dto.security.RefreshDto;
 import com.example.demo.dto.security.RegisterUserDto;
 import com.example.demo.dto.security.VerifyUserDto;
+import com.example.demo.entity.user.Profile;
 import com.example.demo.entity.user.User;
 import com.example.demo.enums.Role;
+import com.example.demo.mapper.UserMapper;
 import com.example.demo.response.LoginResponse;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -29,25 +34,31 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
+    private final ProfileService profileService;
+
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
 
     public User signup(RegisterUserDto input) {
-        //Check existing user
         Optional<User> existingUser = userRepository.findByUsername(input.getEmail());
         if (existingUser.isPresent()) {
             User user = existingUser.get();
-            if (!user.isEnabled()) {
-                userRepository.delete(user);
-            } else {
-                throw new RuntimeException("Email already registered");
+            if (!user.isEnabled()) userRepository.delete(user);
+             else throw new RuntimeException("Email already registered");
             }
-        }
 
-        User newUser = new User(input.getEmail(), passwordEncoder.encode(input.getPassword()), Role.ROLE_USER);
+        User newUser = new User(input.getEmail(),
+                passwordEncoder.encode(input.getPassword()),
+                Role.ROLE_USER);
         newUser.setVerificationCode(generateVerificationCode());
         newUser.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
         newUser.setEnabled(false);
 
-        sendVerificationEmail(newUser);
+        try {
+            sendVerificationEmail(newUser);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send verification email", e);
+        }
 
         return userRepository.save(newUser);
     }
@@ -65,7 +76,8 @@ public class AuthenticationService {
                 accessToken,
                 jwtService.getExpirationTime(),
                 refreshToken,
-                jwtService.getRefreshExpirationTime()
+                jwtService.getRefreshExpirationTime(),
+                userMapper.toUserResponseDto(user)
         );
     }
 
@@ -77,8 +89,7 @@ public class AuthenticationService {
         User user = userRepository.findByUsername(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         // Validate the refresh token (throws if invalid or expired)
-        boolean isValid = jwtService.isTokenValid(dto.getRefreshToken(),user);
-        if (!isValid) {
+        if (!jwtService.isTokenValid(dto.getRefreshToken(), user)) {
             throw new RuntimeException("Refresh token is invalid or expired. Please login again.");
         }
 
@@ -92,7 +103,8 @@ public class AuthenticationService {
                 newAccessToken,
                 jwtService.getExpirationTime(),
                 dto.getRefreshToken(),
-                jwtService.getRefreshExpirationTime()
+                jwtService.getRefreshExpirationTime(),
+                userMapper.toUserResponseDto(user)
         );
     }
 
@@ -113,6 +125,7 @@ public class AuthenticationService {
         return user;
     }
 
+    @Transactional
     public void verifyUser(VerifyUserDto input) {
         Optional<User> optionalUser = userRepository.findByUsername(input.getEmail());
         if (optionalUser.isPresent()) {
@@ -124,6 +137,8 @@ public class AuthenticationService {
                 user.setEnabled(true);
                 user.setVerificationCode(null);
                 user.setVerificationCodeExpiresAt(null);
+
+                Profile userProfile = profileService.createProfile(user);
                 userRepository.save(user);
             } else {
                 throw new RuntimeException("Invalid verification code");

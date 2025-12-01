@@ -32,12 +32,6 @@ public class SeriesService {
                 .build();
 
         Set<Book> books = new HashSet<>();
-        for (Long bookId : request.getBookIds()) {
-            Book book = bookRepository.findById(bookId)
-                    .orElseThrow(() -> new BookNotFoundException("Book not found with id " + bookId));
-            books.add(book);
-            book.setSeries(series);
-        }
         series.setBooks(books);
 
         Series saved = seriesRepository.save(series);

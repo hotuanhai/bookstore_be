@@ -26,12 +26,9 @@ public class EditionRequest {
     private String name;
     @NotBlank(message = "ISBN is required")
     private String isbn;
-    private String dimension;
-    private int numberOfPages;
     private int publishedYear;
     private String description;
     private String language;
-    private String translator;
     private EditionFormat format;
     //price
     @Min(value = 0, message = "Price must be non-negative")

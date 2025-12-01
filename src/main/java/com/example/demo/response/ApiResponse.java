@@ -13,16 +13,17 @@ public class ApiResponse<T> {
     private int status;
     private String message;
     private T data;
+    private boolean success;
 
     public static <T> ApiResponse<T> success(T data, String message) {
-        return new ApiResponse<>(200, message, data);
+        return new ApiResponse<>(200, message, data, true);
     }
 
     public static <T> ApiResponse<T> created(T data, String message) {
-        return new ApiResponse<>(201, message, data);
+        return new ApiResponse<>(201, message, data, true);
     }
 
     public static <T> ApiResponse<T> error(int status, String message) {
-        return new ApiResponse<>(status, message, null);
+        return new ApiResponse<>(status, message, null, false);
     }
 }

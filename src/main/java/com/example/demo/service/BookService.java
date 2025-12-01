@@ -20,6 +20,7 @@ import com.example.demo.mapper.BookMapper;
 import com.example.demo.request.BookRequest;
 import com.example.demo.entity.Author;
 import com.example.demo.request.EditionRequest;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,44 +43,70 @@ public class BookService {
     private final BookEditionRepository bookEditionRepository;
     private final BookEditionMapper bookEditionMapper;
 
-    @Transactional(readOnly = true)
-    public Page<BookSummaryDto> getAllBooks(Pageable pageable){
-        Page<Book> books = bookRepository.findAll(pageable);
-        return books.map(bookMapper::toSummaryDto);
-    }
-
     @Transactional
     public BookDto addBook(BookRequest request){
+        Set<Genre> genres = request.getGenres().stream()
+                .map(name -> genreRepository.findByName(name)
+                        .orElseThrow(() -> new RuntimeException("Genre not found: " + name)))
+                .collect(Collectors.toSet());
+
         Book book = Book.builder()
+                .title(request.getTitle())
+                .authors(new HashSet<>(authorRepository.findAllById(request.getAuthorIds())))
                 .status(request.getStatus())
-                .genres(new HashSet<>(genreRepository.findAllById(request.getGenreIds())))
+                .genres(genres)
                 .build();
 
-        //Create edition
         BookEdition edition = BookEdition.builder()
                 .name(request.getName())
-                .isbn(request.getIsbn())
-                .dimension(request.getDimension())
-                .numberOfPages(request.getNumberOfPages())
-                .publishedYear(request.getPublishedYear())
-                .description(request.getDescription())
-                .language(request.getLanguage())
-                .translator(request.getTranslator())
-                .price(request.getPrice())
-                .stock(request.getStock())
                 .imageUrl(request.getImageUrl())
-                .status(request.getStatus())
+                .price(request.getPrice())
+                .description(request.getDescription())
+                .isbn(request.getIsbn())
+                .stock(request.getStock())
+                .publishedYear(request.getPublishedYear())
+                .publisher(request.getPublisher())
+                .status(request.getEditionStatus())
+                .language(request.getLanguage())
                 .format(request.getFormat())
-                .discountPercentage(request.getDiscountPercentage())
-                .discountStartDate(request.getDiscountStartDate())
-                .discountEndDate(request.getDiscountEndDate())
                 .build();
 
-        // Link relationships
+        // Attach edition to book
         book.addEdition(edition);
 
         Book saved = bookRepository.save(book);
         return bookMapper.toDto(saved);
+    }
+
+    @Transactional
+    public BookDto updateBook(Long id, BookRequest request) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+        Set<Genre> genres = request.getGenres().stream()
+                .map(name -> genreRepository.findByName(name)
+                        .orElseThrow(() -> new RuntimeException("Genre not found: " + name)))
+                .collect(Collectors.toSet());
+
+        book.setTitle(request.getTitle());
+        book.setStatus(request.getStatus());
+        book.setAuthors(new HashSet<>(authorRepository.findAllById(request.getAuthorIds())));
+        book.setGenres(genres);
+
+        Book updated = bookRepository.save(book);
+        return bookMapper.toDto(updated);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BookDto> getAllBooksWithDetails(Pageable pageable) {
+        Page<Book> books = bookRepository.findAllWithDetails(pageable);
+        return books.map(bookMapper::toDto);
+    }
+
+    public BookDto getBookById(Long id) {
+        Book book = bookRepository.findBookWithRelations(id)
+                .orElseThrow(() -> new BookNotFoundException("Book not found"));
+
+        return bookMapper.toDto(book);
     }
 
     @Transactional
@@ -93,12 +122,9 @@ public class BookService {
         BookEdition edition = BookEdition.builder()
                 .name(request.getName())
                 .isbn(request.getIsbn())
-                .dimension(request.getDimension())
-                .numberOfPages(request.getNumberOfPages())
                 .publishedYear(request.getPublishedYear())
                 .description(request.getDescription())
                 .language(request.getLanguage())
-                .translator(request.getTranslator())
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .imageUrl(request.getImageUrl())
@@ -125,8 +151,32 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookSummaryDto> searchBooks(String keyword, Pageable pageable){
+    public Page<BookSummaryDto> searchBooks(String keyword,Set<String> countries, Pageable pageable){
+        if (countries != null && !countries.isEmpty()) {
+            Set<String> nationalities = countries.stream()
+                    .map(this::mapCountryToNationality).collect(Collectors.toSet());
+            return bookRepository.searchByTitleOrAuthorAndCountry(keyword, nationalities, pageable);
+        }
         return bookRepository.searchByTitleOrAuthor(keyword, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BookSummaryDto> getAllBooks(Pageable pageable){
+        return bookRepository.findAllBookSummaries(pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BookSummaryDto> getLatestBooks(Set<String> countries, Pageable pageable) {
+        LocalDateTime threeMonthsAgo = LocalDateTime.now().minusMonths(3);
+
+        if (countries != null && !countries.isEmpty()) {
+            Set<String> nationalities = countries.stream()
+                    .map(this::mapCountryToNationality)
+                    .collect(Collectors.toSet());
+            return bookRepository.findLatestBooksByCountry(threeMonthsAgo, nationalities, pageable);
+        }
+
+        return bookRepository.findLatestBooks(threeMonthsAgo, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -177,5 +227,19 @@ public class BookService {
             book.setStatus(BookStatus.AVAILABLE);
             bookRepository.save(book);
         }
+    }
+
+    private String mapCountryToNationality(String country) {
+        Map<String, String> countryMap = Map.of(
+                "Brazil", "Brazilian",
+                "Britain", "British",
+                "UK", "British",
+                "France", "French",
+                "Japan", "Japanese",
+                "Vietnam", "Vietnamese",
+                "America", "American",
+                "USA", "American"
+        );
+        return countryMap.getOrDefault(country, country);
     }
 }

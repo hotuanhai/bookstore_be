@@ -28,10 +28,6 @@ public class BookEdition {
     @Column(nullable = false, unique = true)
     private String isbn;
 
-    private String dimension;
-
-    private int numberOfPages;
-
     private String publisher;
 
     private int publishedYear;
@@ -40,8 +36,6 @@ public class BookEdition {
     private String description;
 
     private String language;
-
-    private String translator;
 
     @Column(nullable = false)
     private int price;

@@ -45,6 +45,12 @@ public class GenreController {
         return ResponseEntity.ok(ApiResponse.success(genreDtos,"Genres fetched successfully"));
     }
 
+    @GetMapping
+    ResponseEntity<ApiResponse<Set<GenreDto>>> getAllGenres(){
+        Set<GenreDto> genreDtos = genreService.getAllGenres();
+        return ResponseEntity.ok(ApiResponse.success(genreDtos,"Genres fetched successfully"));
+    }
+
     @PutMapping("/{genreId}/move/{targetMainGenreId}")
     public ResponseEntity<ApiResponse<Void>> moveGenre(
             @PathVariable Long genreId,

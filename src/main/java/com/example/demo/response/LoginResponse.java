@@ -1,5 +1,6 @@
 package com.example.demo.response;
 
+import com.example.demo.dto.security.UserResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,4 +14,6 @@ public class LoginResponse {
 
     private String refreshToken;
     private long refreshTokenExpiresIn;
+
+    private UserResponseDto userResponseDto;
 }

@@ -1,8 +1,7 @@
 package com.example.demo.entity.user;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,6 +9,9 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Profile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,10 +32,7 @@ public class Profile {
 
     private String location;
 
-    private String websiteUrl;
     private String facebookUrl;
-    private String instagramUrl;
-    private String twitterUrl;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -49,10 +48,13 @@ public class Profile {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Profile() {}
-
     public Profile(User user) {
         this.user = user;
+        this.displayName = user.getUsername();
+        this.avatarUrl = null;
+        this.bio = null;
+        this.location = null;
+        this.facebookUrl = null;
+        this.dateOfBirth = null;
     }
-
 }

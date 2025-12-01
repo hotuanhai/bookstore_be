@@ -11,9 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +38,16 @@ public class GenreService {
 
         Genre saved = genreRepository.save(newGenre);
         return genreMapper.toDto(saved);
+    }
+
+    @Transactional
+    public Set<GenreDto> getAllGenres() {
+        List<Genre> dtos = genreRepository.findAll();
+        //alphabetical order
+        return dtos.stream()
+                .sorted(Comparator.comparing(Genre::getName))
+                .map(genreMapper::toDto)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Transactional

@@ -52,9 +52,9 @@ public class BookMapper {
                         .map(authorMapper::toSummaryDto).collect(Collectors.toSet()))
                 .genres(book.getGenres().stream().map(Genre::getName).collect(Collectors.toSet()))
                 .status(book.getStatus())
-                .seriesId(book.getSeries().getId())
-                .seriesName(book.getSeries().getName())
-                .bookEditionDtos(book.getEditions().stream()
+                .seriesId(book.getSeries() == null ? null : book.getSeries().getId())
+                .seriesName(book.getSeries() == null ? null : book.getSeries().getName())
+                .bookEditionDtos(book.getEditions() == null ? null : book.getEditions().stream()
                         .map(bookEditionMapper::toDto).collect(Collectors.toSet()))
                 .build();
     }

@@ -12,4 +12,7 @@ public class UserResponseDto {
     private Long id;
     private String email;
     private Role role;
+    private boolean enabled;
+
+    private ProfileDto profileDto;
 }
