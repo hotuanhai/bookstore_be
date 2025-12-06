@@ -5,8 +5,6 @@ import com.example.demo.enums.EditionFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -30,7 +28,7 @@ public class BookEditionDto {
     private int price;
     private int stock;
     private String imageUrl;
-    private int discountPercentage;
+    private double discountPercentage;
     private LocalDateTime discountStartDate;
     private LocalDateTime discountEndDate;
     private BookStatus status;

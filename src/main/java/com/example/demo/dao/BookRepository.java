@@ -1,9 +1,7 @@
 package com.example.demo.dao;
 
 import com.example.demo.dto.BookSummaryDto;
-import com.example.demo.entity.Author;
 import com.example.demo.entity.book.Book;
-import com.example.demo.entity.genre.Genre;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -12,7 +10,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -20,6 +17,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
+                e.id,
                 b.title,
                 e.imageUrl,
                 e.price,
@@ -46,6 +44,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
+                e.id,
                 b.title,
                 e.imageUrl,
                 e.price,
@@ -77,6 +76,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
+                e.id,
                 b.title,
                 e.imageUrl,
                 e.price,
@@ -102,6 +102,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
+                e.id,
                 b.title,
                 e.imageUrl,
                 e.price,
@@ -127,6 +128,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
+                e.id,
                 b.title,
                 e.imageUrl,
                 e.price,
@@ -151,6 +153,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
+                e.id,
                 b.title,
                 e.imageUrl,
                 e.price,
@@ -174,6 +177,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
+                e.id,
                 b.title,
                 e.imageUrl,
                 e.price,
@@ -198,6 +202,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("""
         SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
             b.id,
+            e.id,
             b.title,
             e.imageUrl,
             e.price,

@@ -34,6 +34,7 @@ public class BookMapper {
 
         return BookSummaryDto.builder()
                 .id(book.getId())
+                .editionId(cheapestEdition.getId())
                 .title(book.getTitle())
                 .price(cheapestEdition.getPrice())
                 .imageUrl(cheapestEdition.getImageUrl())

@@ -12,12 +12,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BookSummaryDto {
     private Long id;
+    private Long editionId;
     private String title;
     private String imageUrl;
     private int price;
     private BookStatus status;
     //for discount
-    private int discountPercentage = 0;
+    private double discountPercentage = 0;
     private LocalDateTime discountStartDate;
     private LocalDateTime discountEndDate;
 }

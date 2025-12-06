@@ -1,11 +1,16 @@
 package com.example.demo.entity.book;
 
+import com.example.demo.entity.cart.CartItem;
 import com.example.demo.enums.BookStatus;
 import com.example.demo.enums.EditionFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -45,7 +50,7 @@ public class BookEdition {
 
     private String imageUrl;
 
-    private int discountPercentage;
+    private double discountPercentage;
 
     private LocalDateTime discountStartDate;
 
@@ -57,4 +62,36 @@ public class BookEdition {
 
     @Enumerated(EnumType.STRING)
     private BookStatus status;
+
+    @OneToMany(mappedBy = "edition", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems = new ArrayList<>();
+
+    public boolean isDiscountActive() {
+        if (discountPercentage == 0) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        return (discountStartDate == null || now.isAfter(discountStartDate)) &&
+                (discountEndDate == null || now.isBefore(discountEndDate));
+    }
+
+    public BigDecimal getDiscountedPrice() {
+        if (!isDiscountActive()) {
+            return BigDecimal.valueOf(price).setScale(2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal priceBD = BigDecimal.valueOf(price);
+        BigDecimal discountBD = BigDecimal.valueOf(discountPercentage)
+                .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+
+        BigDecimal discountedPrice = priceBD.subtract(priceBD.multiply(discountBD));
+
+        return discountedPrice.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal getCurrentPrice() {
+        return isDiscountActive()
+                ? getDiscountedPrice()
+                : BigDecimal.valueOf(price).setScale(2, RoundingMode.HALF_UP);
+    }
 }
