@@ -28,9 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -216,6 +214,14 @@ public class BookService {
         book.setStatus(BookStatus.DELETED);
         bookRepository.save(book);
         //bookRepository.delete(book);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookSummaryDto> getBooksByEditionIds(Set<Long> editionIds) {
+        if (editionIds == null || editionIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return bookRepository.findBooksByEditionIds(editionIds);
     }
 
     // Change status from out-of-stock to available

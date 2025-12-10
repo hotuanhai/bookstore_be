@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -252,4 +253,23 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @EntityGraph(attributePaths = {"authors", "genres", "editions", "series"})
     @Query("SELECT b FROM Book b")
     Page<Book> findAllWithDetails(Pageable pageable);
+
+    @Query("""
+        SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
+            b.id,
+            e.id,
+            b.title,
+            e.imageUrl,
+            e.price,
+            b.status,
+            e.discountPercentage,
+            e.discountStartDate,
+            e.discountEndDate
+        )
+        FROM Book b
+        JOIN b.editions e
+        WHERE e.id IN :editionIds
+        AND b.status NOT IN ('ARCHIVED', 'DELETED')
+        """)
+    List<BookSummaryDto> findBooksByEditionIds(@Param("editionIds") Set<Long> editionIds);
 }

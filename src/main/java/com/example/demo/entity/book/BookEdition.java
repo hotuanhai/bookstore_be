@@ -1,5 +1,6 @@
 package com.example.demo.entity.book;
 
+import com.example.demo.entity.WishlistItem;
 import com.example.demo.entity.cart.CartItem;
 import com.example.demo.enums.BookStatus;
 import com.example.demo.enums.EditionFormat;
@@ -65,6 +66,9 @@ public class BookEdition {
 
     @OneToMany(mappedBy = "edition", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> cartItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "bookEdition", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WishlistItem> wishListItems = new ArrayList<>();
 
     public boolean isDiscountActive() {
         if (discountPercentage == 0) {

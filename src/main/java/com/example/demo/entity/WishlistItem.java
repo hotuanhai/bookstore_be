@@ -3,7 +3,6 @@ package com.example.demo.entity;
 import com.example.demo.entity.book.BookEdition;
 import com.example.demo.entity.user.User;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.Fetch;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class WishListItem {
+public class WishlistItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -143,6 +144,14 @@ public class BookController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(books, "Books by genre fetched successfully"));
+    }
+
+    @GetMapping("/by-editions")
+    public ResponseEntity<ApiResponse<List<BookSummaryDto>>> getBooksByEditionIds(
+            @RequestParam Set<Long> editionIds) {
+        List<BookSummaryDto> books = bookService.getBooksByEditionIds(editionIds);
+        return ResponseEntity.ok(
+                ApiResponse.success(books, "Books fetched successfully"));
     }
 
     @GetMapping("/author/{authorId}")
