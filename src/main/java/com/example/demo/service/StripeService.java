@@ -13,11 +13,15 @@ import com.example.demo.request.CheckoutRequest;
 import com.example.demo.request.OrderRequest;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.StripeObject;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
+
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -258,31 +262,50 @@ public class StripeService {
         }
     }
 
-
-
     private void handlePaymentSucceeded(Event event) {
-        PaymentIntent paymentIntent = (PaymentIntent) event.getDataObjectDeserializer()
-                .getObject().orElseThrow(() -> new RuntimeException("Failed to deserialize payment intent"));
-//        UPDATE status order(success)
-        updatePaymentFromIntent(paymentIntent);
-        log.info("Payment succeeded: {}", paymentIntent.getId());
+        try {
+            // Properly deserialize the PaymentIntent
+            EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
+            StripeObject stripeObject = null;
 
-        String orderId = paymentIntent.getMetadata().get("orderId");
-
-        if (orderId != null) {
-            try {
-                // Update order status
-                orderService.updatePaymentStatus(Long.parseLong(orderId), PaymentStatus.PAID);
-                orderService.updateOrderStatus(Long.parseLong(orderId), OrderStatus.PROCESSING);
-
-                log.info("Payment succeeded and order updated: orderId={}, paymentIntentId={}",
-                        orderId, paymentIntent.getId());
-            } catch (Exception e) {
-                log.error("Failed to update order status for orderId: {}", orderId, e);
-                // Consider adding compensation logic or manual review queue
+            if (dataObjectDeserializer.getObject().isPresent()) {
+                stripeObject = dataObjectDeserializer.getObject().get();
+            } else {
+                log.error("Failed to deserialize PaymentIntent from event: {}", event.getId());
+                throw new RuntimeException("Failed to deserialize payment intent");
             }
-        } else {
-            log.warn("No orderId found in payment intent metadata: {}", paymentIntent.getId());
+
+            PaymentIntent paymentIntent = (PaymentIntent) stripeObject;
+
+            log.info("Processing payment_intent.succeeded for: {}", paymentIntent.getId());
+
+            // Get metadata - THIS IS CRITICAL
+            Map<String, String> metadata = paymentIntent.getMetadata();
+
+            if (metadata == null || !metadata.containsKey("orderId")) {
+                log.error("PaymentIntent {} missing orderId in metadata", paymentIntent.getId());
+                // Don't throw - payment succeeded but we can't find the order
+                return;
+            }
+
+            // Update order
+            String orderId = paymentIntent.getMetadata().get("orderId");
+            if (orderId != null) {
+                try {
+                    // Update order status
+                    orderService.updatePaymentStatus(Long.parseLong(orderId), PaymentStatus.PAID);
+                    orderService.updateOrderStatus(Long.parseLong(orderId), OrderStatus.PROCESSING);
+                    log.info("Payment succeeded and order updated: orderId={}, paymentIntentId={}",
+                            orderId, paymentIntent.getId());
+                } catch (Exception e) {
+                    log.error("Failed to update order status for orderId: {}", orderId, e);
+                }
+            } else {
+                log.warn("No orderId found in payment intent metadata: {}", paymentIntent.getId());
+            }
+        } catch (ClassCastException e) {
+            log.error("Error casting to PaymentIntent: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to deserialize payment intent", e);
         }
     }
 
@@ -301,7 +324,6 @@ public class StripeService {
         paymentRepository.save(payment);
         log.warn("Payment failed: {}", paymentIntent.getId());
     }
-
 
     /**
      * Query Payment Status
