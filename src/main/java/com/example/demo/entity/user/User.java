@@ -2,6 +2,8 @@ package com.example.demo.entity.user;
 import com.example.demo.entity.Comment;
 import com.example.demo.entity.WishlistItem;
 import com.example.demo.entity.cart.Cart;
+import com.example.demo.entity.order.Order;
+import com.example.demo.entity.order.OrderItem;
 import com.example.demo.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -52,6 +54,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WishlistItem> wishlist = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

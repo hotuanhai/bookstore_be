@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -39,7 +40,7 @@ public class BookRequest {
 
     @NotNull(message = "Price is required")
     @Min(value = 0, message = "Price cannot be negative")
-    private Integer price = 0;
+    private BigDecimal price = BigDecimal.ZERO;
 
     private String description;
 

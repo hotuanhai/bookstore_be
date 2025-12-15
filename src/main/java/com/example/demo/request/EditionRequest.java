@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -32,7 +33,7 @@ public class EditionRequest {
     private EditionFormat format;
     //price
     @Min(value = 0, message = "Price must be non-negative")
-    private int price;
+    private BigDecimal price;
     @Min(value = 0, message = "Stock must be non-negative")
     private int stock;
     private String imageUrl;

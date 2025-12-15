@@ -51,10 +51,10 @@ public class CartItem {
         if (edition.isDiscountActive()) {
             return edition.getDiscountedPrice().setScale(2, RoundingMode.HALF_UP);
         }
-        return BigDecimal.valueOf(edition.getPrice()).setScale(2, RoundingMode.HALF_UP);
+        return edition.getPrice().setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getOriginalPrice() {
-        return BigDecimal.valueOf(edition.getPrice()).setScale(2, RoundingMode.HALF_UP);
+        return edition.getPrice().setScale(2, RoundingMode.HALF_UP);
     }
 }

@@ -43,8 +43,8 @@ public class BookEdition {
 
     private String language;
 
-    @Column(nullable = false)
-    private int price;
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal price;
 
     @Column(nullable = false)
     private int stock;
@@ -81,14 +81,13 @@ public class BookEdition {
 
     public BigDecimal getDiscountedPrice() {
         if (!isDiscountActive()) {
-            return BigDecimal.valueOf(price).setScale(2, RoundingMode.HALF_UP);
+            return price.setScale(2, RoundingMode.HALF_UP);
         }
 
-        BigDecimal priceBD = BigDecimal.valueOf(price);
         BigDecimal discountBD = BigDecimal.valueOf(discountPercentage)
                 .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
 
-        BigDecimal discountedPrice = priceBD.subtract(priceBD.multiply(discountBD));
+        BigDecimal discountedPrice = price.subtract(price.multiply(discountBD));
 
         return discountedPrice.setScale(2, RoundingMode.HALF_UP);
     }
@@ -96,6 +95,6 @@ public class BookEdition {
     public BigDecimal getCurrentPrice() {
         return isDiscountActive()
                 ? getDiscountedPrice()
-                : BigDecimal.valueOf(price).setScale(2, RoundingMode.HALF_UP);
+                : price.setScale(2, RoundingMode.HALF_UP);
     }
 }

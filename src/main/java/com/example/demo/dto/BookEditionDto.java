@@ -4,6 +4,7 @@ import com.example.demo.enums.BookStatus;
 import com.example.demo.enums.EditionFormat;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -25,7 +26,7 @@ public class BookEditionDto {
     private String translator;
     private EditionFormat format;
     //price
-    private int price;
+    private BigDecimal price;
     private int stock;
     private String imageUrl;
     private double discountPercentage;

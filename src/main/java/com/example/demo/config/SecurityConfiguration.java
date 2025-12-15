@@ -32,6 +32,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/payment/**").permitAll()
                         .requestMatchers(HttpMethod.GET, SecurityConstants.PUBLIC_GET).permitAll()
                         .requestMatchers(HttpMethod.POST, SecurityConstants.PUBLIC_POST).permitAll()
                         .requestMatchers(HttpMethod.PUT, SecurityConstants.PUBLIC_PUT).permitAll()

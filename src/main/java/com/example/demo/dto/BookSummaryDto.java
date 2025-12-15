@@ -3,6 +3,7 @@ package com.example.demo.dto;
 import com.example.demo.enums.BookStatus;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -15,7 +16,7 @@ public class BookSummaryDto {
     private Long editionId;
     private String title;
     private String imageUrl;
-    private int price;
+    private BigDecimal price;
     private BookStatus status;
     //for discount
     private double discountPercentage = 0;
