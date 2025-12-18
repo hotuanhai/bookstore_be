@@ -105,33 +105,11 @@ public class BookController {
     public ResponseEntity<ApiResponse<Page<BookSummaryDto>>> searchBooks(
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(required = false, defaultValue = "") String countries,
+            @RequestParam(required = false, defaultValue = "") String genreIds,
             @RequestParam(required = false) String sort, // e.g., "price,asc" or "latest,desc"
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Set<String> countrySet = Arrays.stream(countries.split(","))
-                .filter(s -> !s.isBlank())
-                .map(String::trim)
-                .collect(Collectors.toSet());
-        //handle sort
-        Sort sortObj = Sort.unsorted();
-        if (sort != null && !sort.isEmpty()) {
-            String[] sortParams = sort.split(",");
-            String field = sortParams[0];
-            String direction = sortParams.length > 1 ? sortParams[1] : "asc";
-            if ("latest".equals(field)) {
-                field = "b.id";
-            } else if ("price".equals(field)) {
-                field = "e.price";
-            } else if ("newest".equals(field)) {
-                field = "e.publishedYear";
-            }
-            sortObj = direction.equalsIgnoreCase("desc")
-                    ? Sort.by(field).descending()
-                    : Sort.by(field).ascending();
-        }
-
-        Pageable pageable = PageRequest.of(page, size, sortObj);
-        Page<BookSummaryDto> books = bookService.searchBooks(keyword,countrySet, pageable);
+        Page<BookSummaryDto> books = bookService.searchBooks(keyword, countries, genreIds, sort, page, size);
 
         return ResponseEntity.ok(
                 ApiResponse.success(books, "Books fetched successfully"));

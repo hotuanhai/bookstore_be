@@ -39,5 +39,4 @@ public class OrderDto {
     @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
     private String paymentFailureReason;
-    private LocalDateTime paidAt;
 }

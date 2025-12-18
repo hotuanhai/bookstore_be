@@ -21,7 +21,8 @@ public class StripePaymentRequestDTO {
 
     @Builder.Default
     private String currency = "usd";
-    private String description;
+    @Builder.Default
+    private String description ="payment";
     private String customerEmail;
     private String customerName;
 

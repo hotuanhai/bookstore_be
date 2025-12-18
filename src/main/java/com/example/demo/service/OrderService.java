@@ -19,10 +19,13 @@ import com.example.demo.exception.EditionNotFoundException;
 import com.example.demo.request.OrderRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -103,9 +106,9 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderDto> getUserOrders(Long userId) {
-        List<Order> orders = orderRepository.findByUserIdOrderByOrderDateDesc(userId);
-        return orders.stream().map(this::mapToDto).collect(Collectors.toList());
+    public Page<OrderDto> getUserOrders(Long userId, Pageable pageable) {
+        Page<Order> orders = orderRepository.findByUserId(userId, pageable);
+        return orders.map(this::mapToDto);
     }
 
     @Transactional
@@ -118,17 +121,17 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDto updatePaymentStatus(Long orderId, PaymentStatus paymentStatus) {
+    public OrderDto updatePaymentStatus(
+            Long orderId, PaymentStatus paymentStatus, String paymentIntentId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
 
         order.setPaymentStatus(paymentStatus);
+        order.setPaymentIntentId(paymentIntentId);
         order = orderRepository.save(order);
 
         log.info("Updated payment status for order {}: {}", orderId, paymentStatus);
         return mapToDto(order);
-
-
     }
 
     @Transactional
@@ -170,23 +173,40 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderDto> getOrdersByStatus(OrderStatus status) {
-        List<Order> orders = orderRepository.findByStatus(status);
-        return orders.stream().map(this::mapToDto).collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
     public OrderDto trackOrder(String trackingNumber) {
         Order order = orderRepository.findByTrackingNumber(trackingNumber)
                 .orElseThrow(() -> new RuntimeException("Order not found with tracking number: " + trackingNumber));
         return mapToDto(order);
     }
 
-    // Get all orders (admin)
     @Transactional(readOnly = true)
-    public List<OrderDto> getAllOrders() {
-        List<Order> orders = orderRepository.findAll(Sort.by(Sort.Direction.DESC, "orderDate"));
-        return orders.stream().map(this::mapToDto).collect(Collectors.toList());
+    public Page<OrderDto> getOrders(OrderStatus status, String search, Pageable pageable) {
+        try {
+            boolean hasSearch = search != null && !search.trim().isEmpty();
+            boolean hasStatus = status != null;
+
+            Page<Order> orders;
+
+            if (hasSearch && hasStatus) {
+                log.debug("Branch: find both");
+                orders = orderRepository.findByStatusAndSearch(status, search.trim(), pageable);
+            } else if (hasSearch) {
+                log.debug("Branch: find search");
+                orders = orderRepository.searchAllOrders(search.trim(), pageable);
+            } else if (hasStatus) {
+                log.debug("Branch: find status");
+                orders = orderRepository.findByStatus(status, pageable);
+            } else {
+                log.debug("Branch: findAll");
+                orders = orderRepository.findAll(pageable);
+            }
+
+            return orders.map(this::mapToDto);
+
+        } catch (Exception ex) {
+            log.error("Failed to get orders", ex);
+            throw new RuntimeException("Failed to retrieve orders");
+        }
     }
 
     // Helper method to map entity to DTO
@@ -208,7 +228,6 @@ public class OrderService {
                 .paymentIntentId(order.getPaymentIntentId())
                 .paymentStatus(order.getPaymentStatus())
                 .paymentFailureReason(order.getPaymentFailureReason())
-                .paidAt(order.getPaidAt())
                 .build();
 
         List<OrderItemDto> itemDtos = order.getOrderItems().stream()
@@ -221,6 +240,7 @@ public class OrderService {
 
     private OrderItemDto mapItemToDto(OrderItem item) {
         OrderItemDto dto = OrderItemDto.builder()
+                .id(item.getId())
                 .editionId(item.getEdition().getId())
                 .productName(item.getProductName())
                 .quantity(item.getQuantity())

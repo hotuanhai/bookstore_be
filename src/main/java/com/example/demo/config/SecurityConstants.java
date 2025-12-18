@@ -7,7 +7,8 @@ public class SecurityConstants {
             "/api/books/**",
             "/api/genres/**",
             "/api/main-genres/**",
-            "/api/user/**"
+            "/api/user/**",
+            "/api/orders/**"
     };
     public static final String[] PUBLIC_POST = {
             "/api/authors/**",
@@ -15,7 +16,8 @@ public class SecurityConstants {
             "/api/books/**",
             "/api/genres/**",
             "/api/main-genres/**",
-            "/api/user/**"
+            "/api/user/**",
+            "/api/orders/**"
     };
     public static final String[] PUBLIC_PUT = {
             "/api/authors/**",
@@ -23,7 +25,8 @@ public class SecurityConstants {
             "/api/books/**",
             "/api/genres/**",
             "/api/main-genres/**",
-            "/api/user/**"
+            "/api/user/**",
+            "/api/orders/**"
     };
 }
 

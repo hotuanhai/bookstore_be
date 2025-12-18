@@ -23,7 +23,9 @@ import com.example.demo.request.EditionRequest;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -149,13 +151,60 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookSummaryDto> searchBooks(String keyword,Set<String> countries, Pageable pageable){
-        if (countries != null && !countries.isEmpty()) {
-            Set<String> nationalities = countries.stream()
-                    .map(this::mapCountryToNationality).collect(Collectors.toSet());
-            return bookRepository.searchByTitleOrAuthorAndCountry(keyword, nationalities, pageable);
+    public Page<BookSummaryDto> searchBooks(String keyword, String countries, String genreIds, String sort, int page, int size) {
+        // Parse countries
+        Set<String> countrySet = Arrays.stream(countries.split(","))
+                .filter(s -> !s.isBlank())
+                .map(String::trim)
+                .collect(Collectors.toSet());
+
+        // Parse genre IDs
+        Set<Long> genreIdSet = Arrays.stream(genreIds.split(","))
+                .filter(s -> !s.isBlank())
+                .map(String::trim)
+                .map(Long::parseLong)
+                .collect(Collectors.toSet());
+
+        // Handle sort
+        Sort sortObj = Sort.unsorted();
+        if (sort != null && !sort.isEmpty()) {
+            String[] sortParams = sort.split(",");
+            String field = sortParams[0];
+            String direction = sortParams.length > 1 ? sortParams[1] : "asc";
+
+            if ("latest".equals(field)) {
+                field = "b.id";
+            } else if ("price".equals(field)) {
+                field = "e.price";
+            } else if ("newest".equals(field)) {
+                field = "e.publishedYear";
+            }
+
+            sortObj = direction.equalsIgnoreCase("desc")
+                    ? Sort.by(field).descending()
+                    : Sort.by(field).ascending();
         }
-        return bookRepository.searchByTitleOrAuthor(keyword, pageable);
+
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+
+        // Map countries to nationalities
+        Set<String> nationalities = null;
+        if (!countrySet.isEmpty()) {
+            nationalities = countrySet.stream()
+                    .map(this::mapCountryToNationality)
+                    .collect(Collectors.toSet());
+        }
+
+        // Determine which query to use based on filters
+        if (nationalities != null && !nationalities.isEmpty() && !genreIdSet.isEmpty()) {
+            return bookRepository.searchByTitleOrAuthorAndCountryAndGenres(keyword, nationalities, genreIdSet, pageable);
+        } else if (nationalities != null && !nationalities.isEmpty()) {
+            return bookRepository.searchByTitleOrAuthorAndCountry(keyword, nationalities, pageable);
+        } else if (!genreIdSet.isEmpty()) {
+            return bookRepository.searchByTitleOrAuthorAndGenres(keyword, genreIdSet, pageable);
+        } else {
+            return bookRepository.searchByTitleOrAuthor(keyword, pageable);
+        }
     }
 
     @Transactional(readOnly = true)

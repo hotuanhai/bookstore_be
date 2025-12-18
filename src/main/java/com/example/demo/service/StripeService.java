@@ -49,6 +49,10 @@ public class StripeService {
         try {
             log.info("Starting createCheckout for userId: {}", userId);
 
+            if(request.getDescription().trim().isEmpty()){
+                request.setDescription("Payment");
+            }
+
             OrderDto orderDto = orderService.createOrderFromCart(userId, request);
             log.info("Order created successfully: {}", orderDto.getId());
 
@@ -251,7 +255,11 @@ public class StripeService {
         String orderId = session.getMetadata().get("orderId");
         if (orderId != null) {
             try {
-                orderService.updatePaymentStatus(Long.parseLong(orderId), PaymentStatus.PAID);
+                orderService.updatePaymentStatus(
+                        Long.parseLong(orderId),
+                        PaymentStatus.PAID,
+                        session.getPaymentIntent()
+                );
                 orderService.updateOrderStatus(Long.parseLong(orderId), OrderStatus.PROCESSING);
 
                 log.info("Checkout completed and order updated: orderId={}, transactionId={}",
@@ -293,7 +301,11 @@ public class StripeService {
             if (orderId != null) {
                 try {
                     // Update order status
-                    orderService.updatePaymentStatus(Long.parseLong(orderId), PaymentStatus.PAID);
+                    orderService.updatePaymentStatus(
+                            Long.parseLong(orderId),
+                            PaymentStatus.PAID,
+                            paymentIntent.getId()
+                    );
                     orderService.updateOrderStatus(Long.parseLong(orderId), OrderStatus.PROCESSING);
                     log.info("Payment succeeded and order updated: orderId={}, paymentIntentId={}",
                             orderId, paymentIntent.getId());

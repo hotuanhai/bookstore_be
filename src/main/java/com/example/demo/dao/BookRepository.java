@@ -75,6 +75,74 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     );
 
     @Query("""
+    SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
+        b.id,
+        e.id,
+        b.title,
+        e.imageUrl,
+        e.price,
+        b.status,
+        e.discountPercentage,
+        e.discountStartDate,
+        e.discountEndDate
+    )
+    FROM Book b
+    JOIN b.editions e
+    JOIN b.authors a
+    JOIN b.genres g
+    WHERE (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      AND b.status NOT IN ('ARCHIVED', 'DELETED')
+      AND g.id IN :genreIds
+      AND e.price = (
+           SELECT MIN(e2.price)
+           FROM Book b2
+           JOIN b2.editions e2
+           WHERE b2.id = b.id
+       )
+    """)
+    Page<BookSummaryDto> searchByTitleOrAuthorAndGenres(
+            @Param("keyword") String keyword,
+            @Param("genreIds") Set<Long> genreIds,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
+        b.id,
+        e.id,
+        b.title,
+        e.imageUrl,
+        e.price,
+        b.status,
+        e.discountPercentage,
+        e.discountStartDate,
+        e.discountEndDate
+    )
+    FROM Book b
+    JOIN b.editions e
+    JOIN b.authors a
+    JOIN b.genres g
+    WHERE (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')))
+      AND b.status NOT IN ('ARCHIVED', 'DELETED')
+      AND LOWER(a.nationality) IN :nationality
+      AND g.id IN :genreIds
+      AND e.price = (
+           SELECT MIN(e2.price)
+           FROM Book b2
+           JOIN b2.editions e2
+           WHERE b2.id = b.id
+       )
+    """)
+    Page<BookSummaryDto> searchByTitleOrAuthorAndCountryAndGenres(
+            @Param("keyword") String keyword,
+            @Param("nationality") Set<String> nationality,
+            @Param("genreIds") Set<Long> genreIds,
+            Pageable pageable
+    );
+
+    @Query("""
             SELECT DISTINCT new com.example.demo.dto.BookSummaryDto(
                 b.id,
                 e.id,

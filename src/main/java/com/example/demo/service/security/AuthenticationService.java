@@ -5,7 +5,6 @@ import com.example.demo.dto.security.LoginUserDto;
 import com.example.demo.dto.security.RefreshDto;
 import com.example.demo.dto.security.RegisterUserDto;
 import com.example.demo.dto.security.VerifyUserDto;
-import com.example.demo.entity.user.Profile;
 import com.example.demo.entity.user.User;
 import com.example.demo.enums.Role;
 import com.example.demo.mapper.UserMapper;
@@ -35,7 +34,6 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final JwtService jwtService;
     private final UserMapper userMapper;
-    private final ProfileService profileService;
 
     private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
 
@@ -138,7 +136,7 @@ public class AuthenticationService {
                 user.setVerificationCode(null);
                 user.setVerificationCodeExpiresAt(null);
 
-                Profile userProfile = profileService.createProfile(user);
+//                Profile userProfile = profileService.createProfile(user);
                 userRepository.save(user);
             } else {
                 throw new RuntimeException("Invalid verification code");

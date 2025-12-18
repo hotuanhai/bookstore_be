@@ -69,16 +69,11 @@ public class Order {
 
     @Column(name = "payment_failure_reason")
     private String paymentFailureReason;
-
-    @Column(name = "paid_at")
-    private LocalDateTime paidAt;
-
     //func
     public void addOrderItem(OrderItem item) {
         orderItems.add(item);
         item.setOrder(this);
     }
-
 
     public void calculateTotals() {
         this.subtotal = orderItems.stream()

@@ -1,17 +1,24 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.OrderDto;
+import com.example.demo.entity.user.User;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.request.OrderRequest;
 import com.example.demo.response.ApiResponse;
 import com.example.demo.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -36,26 +43,40 @@ public class OrderController {
     }
 
     // Get user orders
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<OrderDto>>> getUserOrders(@PathVariable Long userId) {
-        List<OrderDto> orders = orderService.getUserOrders(userId);
+    @GetMapping("/user")
+    public ResponseEntity<ApiResponse<Page<OrderDto>>> getUserOrders(
+            @AuthenticationPrincipal User user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "orderDate") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir)
+    {
+        Pageable pageable = PageRequest.of(page, size,
+                sortDir.equalsIgnoreCase("ASC") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending());
+        Page<OrderDto> orders = orderService.getUserOrders(user.getId(), pageable);
         return ResponseEntity.ok(ApiResponse.success(orders, "User orders retrieved successfully"));
     }
 
-    // Get all orders (admin)
     @GetMapping
-    public ResponseEntity<ApiResponse<List<OrderDto>>> getAllOrders() {
-        List<OrderDto> orders = orderService.getAllOrders();
-        return ResponseEntity.ok(ApiResponse.success(orders, "All orders retrieved successfully"));
-    }
+    public ResponseEntity<ApiResponse<Page<OrderDto>>> getOrders(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "orderDate") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        log.info("=== GET /api/orders endpoint hit ===");
+        log.info("Status: {}, Search: {}, Page: {}, Size: {}", status, search, page, size);
 
-    // Update order status (admin)
-    @PutMapping("/{orderId}/status")
-    public ResponseEntity<ApiResponse<OrderDto>> updateStatus(
-            @PathVariable Long orderId,
-            @RequestParam OrderStatus status) {
-        OrderDto order = orderService.updateOrderStatus(orderId, status);
-        return ResponseEntity.ok(ApiResponse.success(order, "Order status updated successfully"));
+        Pageable pageable = PageRequest.of(page, size,
+                sortDir.equalsIgnoreCase("ASC")
+                        ? Sort.by(sortBy).ascending()
+                        : Sort.by(sortBy).descending());
+
+        Page<OrderDto> orders = orderService.getOrders(status, search, pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(orders, "Orders retrieved successfully"));
     }
 
     // Add tracking number (admin)
@@ -81,10 +102,14 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(order, "Order tracked successfully"));
     }
 
-    // Get orders by status (admin)
-    @GetMapping("/status/{status}")
-    public ResponseEntity<ApiResponse<List<OrderDto>>> getOrdersByStatus(@PathVariable OrderStatus status) {
-        List<OrderDto> orders = orderService.getOrdersByStatus(status);
-        return ResponseEntity.ok(ApiResponse.success(orders, "Orders retrieved successfully"));
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<ApiResponse<OrderDto>> updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam OrderStatus status
+    ) {
+        OrderDto order = orderService.updateOrderStatus(orderId, status);
+        return ResponseEntity.ok(
+                ApiResponse.success(order, "Order status updated successfully")
+        );
     }
 }

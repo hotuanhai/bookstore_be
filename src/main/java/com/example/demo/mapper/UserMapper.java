@@ -1,6 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.dto.security.ProfileDto;
+import com.example.demo.dto.ProfileDto;
 import com.example.demo.dto.security.UserResponseDto;
 import com.example.demo.entity.user.Profile;
 import com.example.demo.entity.user.User;

@@ -1,5 +1,6 @@
 package com.example.demo.dto.security;
 
+import com.example.demo.dto.ProfileDto;
 import com.example.demo.enums.Role;
 import lombok.*;
 
