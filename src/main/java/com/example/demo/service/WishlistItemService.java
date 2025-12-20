@@ -11,6 +11,10 @@ import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,18 +78,18 @@ public class WishlistItemService {
                 .toList();
     }
 
-//    @Transactional(readOnly = true)
-//    public Page<WishlistDto> getUserWishListPaginated(Long userId, Pageable pageable) {
-//        Page<WishlistItem> items = wishlistItemRepository.findByUserId(userId,
-//                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
-//                        Sort.by(Sort.Direction.DESC, "createdAt")));
-//
-//        return items.map(item -> WishlistDto.builder()
-//                .wishlistItemId(item.getId())
-//                .bookEditionId(item.getBookEdition().getId())
-//                .createdAt(item.getCreatedAt())
-//                .build());
-//    }
+    @Transactional(readOnly = true)
+    public Page<WishlistDto> getUserWishListPaginated(Long userId, Pageable pageable) {
+        Page<WishlistItem> items = wishlistItemRepository.findByUserId(userId,
+                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                        Sort.by(Sort.Direction.DESC, "createdAt")));
+
+        return items.map(item -> WishlistDto.builder()
+                .wishlistItemId(item.getId())
+                .bookEditionId(item.getBookEdition().getId())
+                .createdAt(item.getCreatedAt())
+                .build());
+    }
 
     @Transactional
     public void clearWishList(Long userId) {

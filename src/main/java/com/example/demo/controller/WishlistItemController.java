@@ -8,6 +8,9 @@ import com.example.demo.service.WishlistItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +29,23 @@ public class WishlistItemController {
             @AuthenticationPrincipal User user) {
         List<WishlistDto> wishList = wishlistItemService.getUserWishlist(user.getId());
         return ResponseEntity.ok(ApiResponse.success(wishList, "Wishlist retrieved successfully"));
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<ApiResponse<Page<WishlistDto>>> getWishList(
+            @AuthenticationPrincipal User user,
+            @PageableDefault(
+                    size = 10,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ) {
+        Page<WishlistDto> wishList =
+                wishlistItemService.getUserWishListPaginated(user.getId(), pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(wishList, "Wishlist retrieved successfully")
+        );
     }
 
 //    @GetMapping("/paginated")
