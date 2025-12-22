@@ -151,7 +151,11 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookSummaryDto> searchBooks(String keyword, String countries, String genreIds, String sort, int page, int size) {
+    public Page<BookSummaryDto> searchBooks(
+            String keyword,
+            String countries,
+            String genreIds,
+            String sort, int page, int size) {
         // Parse countries
         Set<String> countrySet = Arrays.stream(countries.split(","))
                 .filter(s -> !s.isBlank())
@@ -195,15 +199,45 @@ public class BookService {
                     .collect(Collectors.toSet());
         }
 
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+        boolean hasNationalities = nationalities != null && !nationalities.isEmpty();
+        boolean hasGenres = !genreIdSet.isEmpty();
+
         // Determine which query to use based on filters
-        if (nationalities != null && !nationalities.isEmpty() && !genreIdSet.isEmpty()) {
-            return bookRepository.searchByTitleOrAuthorAndCountryAndGenres(keyword, nationalities, genreIdSet, pageable);
-        } else if (nationalities != null && !nationalities.isEmpty()) {
+        if (hasKeyword && hasNationalities && hasGenres) {
+            // keyword + country + genres
+            return bookRepository.searchByTitleOrAuthorAndCountryAndGenres(
+                    keyword, nationalities, genreIdSet, (long) genreIdSet.size(), pageable);
+
+        } else if (hasKeyword && hasNationalities) {
+            // keyword + country
             return bookRepository.searchByTitleOrAuthorAndCountry(keyword, nationalities, pageable);
-        } else if (!genreIdSet.isEmpty()) {
-            return bookRepository.searchByTitleOrAuthorAndGenres(keyword, genreIdSet, pageable);
-        } else {
+
+        } else if (hasKeyword && hasGenres) {
+            // keyword + genres
+            return bookRepository.searchByTitleOrAuthorAndGenres(
+                    keyword, genreIdSet, (long) genreIdSet.size(), pageable);
+
+        } else if (hasNationalities && hasGenres) {
+            // country + genres (no keyword)
+            return bookRepository.findByCountryAndAllGenres(
+                    nationalities, genreIdSet, (long) genreIdSet.size(), pageable);
+
+        } else if (hasKeyword) {
+            // keyword only
             return bookRepository.searchByTitleOrAuthor(keyword, pageable);
+
+        } else if (hasNationalities) {
+            // country only
+            return bookRepository.findByCountry(nationalities, pageable);
+
+        } else if (hasGenres) {
+            // genres only
+            return bookRepository.findByAllGenres(genreIdSet, (long) genreIdSet.size(), pageable);
+
+        } else {
+            // no filters - return all books
+            return bookRepository.findAllBookSummaries(pageable);
         }
     }
 
@@ -225,20 +259,20 @@ public class BookService {
 
         return bookRepository.findLatestBooks(threeMonthsAgo, pageable);
     }
-
-    @Transactional(readOnly = true)
-    public Page<BookSummaryDto> getBooksByGenre(Long genreId, Pageable pageable){
-        Genre genre = genreRepository.findById(genreId)
-                .orElseThrow(() -> new GenreNotFoundException("Genre not found with id: " + genreId));
-        return bookRepository.findByGenres_Id(genreId, pageable);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<BookSummaryDto> getBooksByAuthor(Long authorId, Pageable pageable){
-        Author author = authorRepository.findById(authorId)
-                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + authorId));
-        return bookRepository.findBooksByAuthorId(authorId, pageable);
-    }
+//
+//    @Transactional(readOnly = true)
+//    public Page<BookSummaryDto> getBooksByGenre(Long genreId, Pageable pageable){
+//        Genre genre = genreRepository.findById(genreId)
+//                .orElseThrow(() -> new GenreNotFoundException("Genre not found with id: " + genreId));
+//        return bookRepository.findByGenres_Id(genreId, pageable);
+//    }
+//
+//    @Transactional(readOnly = true)
+//    public Page<BookSummaryDto> getBooksByAuthor(Long authorId, Pageable pageable){
+//        Author author = authorRepository.findById(authorId)
+//                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + authorId));
+//        return bookRepository.findBooksByAuthorId(authorId, pageable);
+//    }
 
     @Transactional(readOnly = true)
     public Page<BookSummaryDto> getDiscountedBooks(Pageable pageable){

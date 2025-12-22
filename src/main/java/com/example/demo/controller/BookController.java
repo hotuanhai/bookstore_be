@@ -115,14 +115,14 @@ public class BookController {
                 ApiResponse.success(books, "Books fetched successfully"));
     }
 
-    @GetMapping("/genre/{genreId}")
-    public ResponseEntity<ApiResponse<Page<BookSummaryDto>>> getBooksByGenre(
-            @PathVariable Long genreId, Pageable pageable) {
-        Page<BookSummaryDto> books = bookService.getBooksByGenre(genreId, pageable);
-
-        return ResponseEntity.ok(
-                ApiResponse.success(books, "Books by genre fetched successfully"));
-    }
+//    @GetMapping("/genre/{genreId}")
+//    public ResponseEntity<ApiResponse<Page<BookSummaryDto>>> getBooksByGenre(
+//            @PathVariable Long genreId, Pageable pageable) {
+//        Page<BookSummaryDto> books = bookService.getBooksByGenre(genreId, pageable);
+//
+//        return ResponseEntity.ok(
+//                ApiResponse.success(books, "Books by genre fetched successfully"));
+//    }
 
     @GetMapping("/by-editions")
     public ResponseEntity<ApiResponse<List<BookSummaryDto>>> getBooksByEditionIds(
@@ -132,14 +132,14 @@ public class BookController {
                 ApiResponse.success(books, "Books fetched successfully"));
     }
 
-    @GetMapping("/author/{authorId}")
-    public ResponseEntity<ApiResponse<Page<BookSummaryDto>>> getBooksByAuthor(
-            @PathVariable Long authorId, Pageable pageable) {
-        Page<BookSummaryDto> books = bookService.getBooksByAuthor(authorId, pageable);
-
-        return ResponseEntity.ok(
-                ApiResponse.success(books, "Books by author fetched successfully"));
-    }
+//    @GetMapping("/author/{authorId}")
+//    public ResponseEntity<ApiResponse<Page<BookSummaryDto>>> getBooksByAuthor(
+//            @PathVariable Long authorId, Pageable pageable) {
+//        Page<BookSummaryDto> books = bookService.getBooksByAuthor(authorId, pageable);
+//
+//        return ResponseEntity.ok(
+//                ApiResponse.success(books, "Books by author fetched successfully"));
+//    }
 
     @GetMapping("/discounted")
     public ResponseEntity<ApiResponse<Page<BookSummaryDto>>> getDiscountedBooks(Pageable pageable) {
