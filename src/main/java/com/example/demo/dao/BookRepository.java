@@ -147,21 +147,21 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             Pageable pageable
     );
 
-//    @Query(BOOK_SUMMARY_SELECT + """
-//            FROM Book b
-//            JOIN b.editions e
-//            JOIN b.genres g
-//            WHERE g.id = :genreId
-//            """ + STATUS_FILTER_AND + " " + MIN_PRICE_CONDITION)
-//    Page<BookSummaryDto> findByGenres_Id(@Param("genreId") Long genreId, Pageable pageable);
-//
-//    @Query(BOOK_SUMMARY_SELECT + """
-//            FROM Book b
-//            JOIN b.editions e
-//            JOIN b.authors a
-//            WHERE a.id = :authorId
-//            """ + STATUS_FILTER_AND + " " + MIN_PRICE_CONDITION)
-//    Page<BookSummaryDto> findBooksByAuthorId(@Param("authorId") Long authorId, Pageable pageable);
+    @Query(BOOK_SUMMARY_SELECT + """
+            FROM Book b
+            JOIN b.editions e
+            JOIN b.genres g
+            WHERE g.id = :genreId
+            """ + STATUS_FILTER_AND + " " + MIN_PRICE_CONDITION)
+    Page<BookSummaryDto> findByGenres_Id(@Param("genreId") Long genreId, Pageable pageable);
+
+    @Query(BOOK_SUMMARY_SELECT + """
+            FROM Book b
+            JOIN b.editions e
+            JOIN b.authors a
+            WHERE a.id = :authorId
+            """ + STATUS_FILTER_AND + " " + MIN_PRICE_CONDITION)
+    Page<BookSummaryDto> findBooksByAuthorId(@Param("authorId") Long authorId, Pageable pageable);
 
     @Query(BOOK_SUMMARY_SELECT + """
             FROM Book b
@@ -211,6 +211,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @EntityGraph(attributePaths = {"authors", "genres", "editions", "series"})
     @Query("SELECT b FROM Book b")
     Page<Book> findAllWithDetails(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"authors", "genres", "editions", "series"})
+    @Query("SELECT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%'))")
+    Page<Book> findAllWithDetailsByTitle(@Param("title") String title, Pageable pageable);
 
     @Query(BOOK_SUMMARY_SELECT + """
             FROM Book b

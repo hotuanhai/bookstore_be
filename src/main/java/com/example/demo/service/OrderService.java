@@ -9,10 +9,10 @@ import com.example.demo.dto.CartItemDto;
 import com.example.demo.dto.OrderDto;
 import com.example.demo.dto.OrderItemDto;
 import com.example.demo.entity.book.BookEdition;
-import com.example.demo.entity.cart.CartItem;
 import com.example.demo.entity.order.Order;
 import com.example.demo.entity.order.OrderItem;
 import com.example.demo.entity.user.User;
+import com.example.demo.enums.OrderMethod;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
 import com.example.demo.exception.EditionNotFoundException;
@@ -36,11 +36,64 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
     private final CartService cartService;
-    private final BookEditionService bookEditionService;
     private final BookEditionRepository bookEditionRepository;
     private final UserRepository userRepository;
+
+    @Transactional
+    public OrderDto createOrder(Long userId, OrderRequest request){
+        if(request.getOrderMethod().equals(OrderMethod.FROM_CART))
+            return createOrderFromCart(userId, request);
+        return createOrderFromEdition(userId, request);
+    }
+
+    @Transactional
+    public OrderDto createOrderFromEdition(Long userId, OrderRequest request){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        BookEdition edition = bookEditionRepository.findById(request.getEditionId())
+                .orElseThrow(() ->
+                        new EditionNotFoundException("Edition not found: " + request.getEditionId())
+                );
+
+        int quantity = request.getQuantity();
+        if (quantity <= 0) {
+            throw new RuntimeException("Quantity must be greater than 0");
+        }
+
+        // Check stock
+        if (edition.getStock() < quantity) {
+            throw new RuntimeException(
+                    "Insufficient stock for: " + edition.getBook().getTitle()
+            );
+        }
+
+        Order order = Order.builder()
+                .user(user)
+                .address(request.getAddress())
+                .name(request.getName())
+                .phoneNumber(request.getPhoneNumber())
+                .paymentMethod(request.getPaymentMethod())
+                .status(OrderStatus.PENDING)
+                .paymentStatus(PaymentStatus.PENDING)
+                .orderItems(new ArrayList<>())
+                .build();
+
+        OrderItem orderItem = OrderItem.builder()
+                .order(order)
+                .edition(edition)
+                .quantity(quantity)
+                .priceAtPurchase(edition.getPrice())
+                .productName(edition.getBook().getTitle() + " - " + edition.getName())
+                .build();
+
+        order.addOrderItem(orderItem);
+        order.calculateTotals();
+        order = orderRepository.save(order);
+
+        return mapToDto(order);
+    }
 
     @Transactional
     public OrderDto createOrderFromCart(Long userId, OrderRequest request) {
@@ -82,12 +135,7 @@ public class OrderService {
                     .priceAtPurchase(edition.getPrice())
                     .productName(edition.getBook().getTitle() + " - " + edition.getName())
                     .build();
-
             order.addOrderItem(orderItem);
-
-            // Reduce stock
-            edition.setStock(edition.getStock() - cartItemDto.getQuantity());
-            bookEditionRepository.save(edition);
         }
 
         order.calculateTotals();

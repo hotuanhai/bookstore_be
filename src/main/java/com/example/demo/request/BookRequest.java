@@ -58,7 +58,8 @@ public class BookRequest {
     private String publisher;
 
     @Enumerated(EnumType.STRING)
-    private BookStatus editionStatus;
+    @Builder.Default
+    private BookStatus editionStatus = BookStatus.AVAILABLE;
 
     private String language;
 

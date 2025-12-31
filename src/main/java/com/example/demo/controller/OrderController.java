@@ -30,7 +30,7 @@ public class OrderController {
     public ResponseEntity<ApiResponse<OrderDto>> createOrder(
             @PathVariable Long userId,
             @RequestBody OrderRequest request) {
-        OrderDto order = orderService.createOrderFromCart(userId, request);
+        OrderDto order = orderService.createOrder(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.created(order, "Order created successfully"));
     }

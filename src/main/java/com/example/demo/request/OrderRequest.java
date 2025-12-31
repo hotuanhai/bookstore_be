@@ -1,5 +1,6 @@
 package com.example.demo.request;
 
+import com.example.demo.enums.OrderMethod;
 import com.example.demo.enums.PaymentMethod;
 import lombok.*;
 
@@ -15,4 +16,9 @@ public class OrderRequest {
     @Builder.Default
     private String description = "";
     private PaymentMethod paymentMethod;
+    private OrderMethod orderMethod;
+
+    // for the direct purchase only
+    private Long editionId;
+    private Integer quantity;
 }

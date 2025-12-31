@@ -86,11 +86,11 @@ public class Order {
     }
 
     private BigDecimal calculateShippingCost(BigDecimal subtotal) {
-        if (subtotal.compareTo(new BigDecimal("500000")) >= 0) {
+        if (subtotal.compareTo(new BigDecimal("25")) >= 0) {
             return BigDecimal.ZERO;
         }
         else {
-            return new BigDecimal("20000");
+            return new BigDecimal("1");
         }
     }
 }

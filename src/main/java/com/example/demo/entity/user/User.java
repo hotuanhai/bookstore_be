@@ -1,5 +1,6 @@
 package com.example.demo.entity.user;
 import com.example.demo.entity.Comment;
+import com.example.demo.entity.StockTransaction;
 import com.example.demo.entity.WishlistItem;
 import com.example.demo.entity.cart.Cart;
 import com.example.demo.entity.order.Order;
@@ -57,6 +58,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "createdBy")
+    private List<StockTransaction> stockTransactions = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

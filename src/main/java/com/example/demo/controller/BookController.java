@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.BookDto;
 import com.example.demo.dto.BookEditionDto;
 import com.example.demo.dto.BookSummaryDto;
+import com.example.demo.entity.user.User;
 import com.example.demo.request.BookRequest;
 import com.example.demo.request.EditionRequest;
 import com.example.demo.response.ApiResponse;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -29,10 +31,13 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping("/details")
-    public ResponseEntity<ApiResponse<Page<BookDto>>> getAllBooksWithDetails(Pageable pageable) {
-        Page<BookDto> books = bookService.getAllBooksWithDetails(pageable);
+    public ResponseEntity<ApiResponse<Page<BookDto>>> getAllBooksWithDetails(
+            Pageable pageable,
+            @RequestParam(required = false) String title)
+    {
+        Page<BookDto> books = bookService.getAllBooksWithDetails(pageable, title);
         return ResponseEntity.ok(
-                ApiResponse.success(books,"All books fetched successfully"));
+                ApiResponse.success(books, "All books fetched successfully"));
     }
 
     @GetMapping("/{bookId}")
@@ -74,8 +79,10 @@ public class BookController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<BookDto>> addBook(
-            @Valid @RequestBody BookRequest request) {
-        BookDto dto = bookService.addBook(request);
+            @Valid @RequestBody BookRequest request,
+            @AuthenticationPrincipal User user
+    ) {
+        BookDto dto = bookService.addBook(request, user);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -132,14 +139,14 @@ public class BookController {
                 ApiResponse.success(books, "Books fetched successfully"));
     }
 
-//    @GetMapping("/author/{authorId}")
-//    public ResponseEntity<ApiResponse<Page<BookSummaryDto>>> getBooksByAuthor(
-//            @PathVariable Long authorId, Pageable pageable) {
-//        Page<BookSummaryDto> books = bookService.getBooksByAuthor(authorId, pageable);
-//
-//        return ResponseEntity.ok(
-//                ApiResponse.success(books, "Books by author fetched successfully"));
-//    }
+    @GetMapping("/author/{authorId}")
+    public ResponseEntity<ApiResponse<Page<BookSummaryDto>>> getBooksByAuthor(
+            @PathVariable Long authorId, Pageable pageable) {
+        Page<BookSummaryDto> books = bookService.getBooksByAuthor(authorId, pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(books, "Books by author fetched successfully"));
+    }
 
     @GetMapping("/discounted")
     public ResponseEntity<ApiResponse<Page<BookSummaryDto>>> getDiscountedBooks(Pageable pageable) {

@@ -9,7 +9,6 @@ import com.example.demo.entity.Payment;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentMethod;
 import com.example.demo.enums.PaymentStatus;
-import com.example.demo.request.CheckoutRequest;
 import com.example.demo.request.OrderRequest;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -21,7 +20,6 @@ import com.stripe.net.Webhook;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,6 +38,7 @@ public class StripeService {
     private final StripeConfiguration stripeConfig;
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
+    private final StockService stockService;
 
     /**
      * func to handle both createCheckoutSession and order
@@ -287,7 +286,7 @@ public class StripeService {
 
             log.info("Processing payment_intent.succeeded for: {}", paymentIntent.getId());
 
-            // Get metadata - THIS IS CRITICAL
+            // Get metadata
             Map<String, String> metadata = paymentIntent.getMetadata();
 
             if (metadata == null || !metadata.containsKey("orderId")) {
@@ -307,6 +306,7 @@ public class StripeService {
                             paymentIntent.getId()
                     );
                     orderService.updateOrderStatus(Long.parseLong(orderId), OrderStatus.PROCESSING);
+                    stockService.removeStockForOrder(Long.valueOf(orderId),paymentIntent.getId());
                     log.info("Payment succeeded and order updated: orderId={}, paymentIntentId={}",
                             orderId, paymentIntent.getId());
                 } catch (Exception e) {

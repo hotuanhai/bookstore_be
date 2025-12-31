@@ -7,9 +7,11 @@ import com.example.demo.dao.GenreRepository;
 import com.example.demo.dto.BookDto;
 import com.example.demo.dto.BookEditionDto;
 import com.example.demo.dto.BookSummaryDto;
+import com.example.demo.entity.Author;
 import com.example.demo.entity.book.Book;
 import com.example.demo.entity.book.BookEdition;
 import com.example.demo.entity.genre.Genre;
+import com.example.demo.entity.user.User;
 import com.example.demo.enums.BookStatus;
 import com.example.demo.exception.AuthorNotFoundException;
 import com.example.demo.exception.BookNotFoundException;
@@ -18,7 +20,7 @@ import com.example.demo.exception.GenreNotFoundException;
 import com.example.demo.mapper.BookEditionMapper;
 import com.example.demo.mapper.BookMapper;
 import com.example.demo.request.BookRequest;
-import com.example.demo.entity.Author;
+import com.example.demo.enums.StockReason;
 import com.example.demo.request.EditionRequest;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -42,9 +44,10 @@ public class BookService {
     private final AuthorRepository authorRepository;
     private final BookEditionRepository bookEditionRepository;
     private final BookEditionMapper bookEditionMapper;
+    private final StockService stockService;
 
     @Transactional
-    public BookDto addBook(BookRequest request){
+    public BookDto addBook(BookRequest request, User user){
         Set<Genre> genres = request.getGenres().stream()
                 .map(name -> genreRepository.findByName(name)
                         .orElseThrow(() -> new RuntimeException("Genre not found: " + name)))
@@ -63,7 +66,8 @@ public class BookService {
                 .price(request.getPrice())
                 .description(request.getDescription())
                 .isbn(request.getIsbn())
-                .stock(request.getStock())
+//                .stock(request.getStock())
+                .stock(0)
                 .publishedYear(request.getPublishedYear())
                 .publisher(request.getPublisher())
                 .status(request.getEditionStatus())
@@ -75,6 +79,24 @@ public class BookService {
         book.addEdition(edition);
 
         Book saved = bookRepository.save(book);
+        if (request.getStock() != null && request.getStock() > 0) {
+            // Get the saved edition (it now has an ID)
+            BookEdition savedEdition = saved.getEditions().iterator().next();
+
+            stockService.addStock(
+                    savedEdition.getId(),
+                    request.getStock(),
+                    StockReason.PURCHASE,
+                    "BOOK-CREATION",
+                    "Initial stock for new book edition",
+                    user
+            );
+
+            // Reload to get updated stock
+            saved = bookRepository.findById(saved.getId())
+                    .orElseThrow(() -> new RuntimeException("Book not found after creation"));
+        }
+
         return bookMapper.toDto(saved);
     }
 
@@ -97,8 +119,15 @@ public class BookService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BookDto> getAllBooksWithDetails(Pageable pageable) {
-        Page<Book> books = bookRepository.findAllWithDetails(pageable);
+    public Page<BookDto> getAllBooksWithDetails(Pageable pageable, String title) {
+        Page<Book> books;
+
+        if (title != null && !title.trim().isEmpty()) {
+            books = bookRepository.findAllWithDetailsByTitle(title.trim(), pageable);
+        } else {
+            books = bookRepository.findAllWithDetails(pageable);
+        }
+
         return books.map(bookMapper::toDto);
     }
 
@@ -259,20 +288,20 @@ public class BookService {
 
         return bookRepository.findLatestBooks(threeMonthsAgo, pageable);
     }
-//
-//    @Transactional(readOnly = true)
-//    public Page<BookSummaryDto> getBooksByGenre(Long genreId, Pageable pageable){
-//        Genre genre = genreRepository.findById(genreId)
-//                .orElseThrow(() -> new GenreNotFoundException("Genre not found with id: " + genreId));
-//        return bookRepository.findByGenres_Id(genreId, pageable);
-//    }
-//
-//    @Transactional(readOnly = true)
-//    public Page<BookSummaryDto> getBooksByAuthor(Long authorId, Pageable pageable){
-//        Author author = authorRepository.findById(authorId)
-//                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + authorId));
-//        return bookRepository.findBooksByAuthorId(authorId, pageable);
-//    }
+
+    @Transactional(readOnly = true)
+    public Page<BookSummaryDto> getBooksByGenre(Long genreId, Pageable pageable){
+        Genre genre = genreRepository.findById(genreId)
+                .orElseThrow(() -> new GenreNotFoundException("Genre not found with id: " + genreId));
+        return bookRepository.findByGenres_Id(genreId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BookSummaryDto> getBooksByAuthor(Long authorId, Pageable pageable){
+        Author author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new AuthorNotFoundException("Author not found with id: " + authorId));
+        return bookRepository.findBooksByAuthorId(authorId, pageable);
+    }
 
     @Transactional(readOnly = true)
     public Page<BookSummaryDto> getDiscountedBooks(Pageable pageable){

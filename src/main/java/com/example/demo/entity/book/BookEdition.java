@@ -1,5 +1,6 @@
 package com.example.demo.entity.book;
 
+import com.example.demo.entity.StockTransaction;
 import com.example.demo.entity.WishlistItem;
 import com.example.demo.entity.cart.CartItem;
 import com.example.demo.enums.BookStatus;
@@ -69,6 +70,9 @@ public class BookEdition {
 
     @OneToMany(mappedBy = "bookEdition", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WishlistItem> wishListItems = new ArrayList<>();
+
+    @OneToMany(mappedBy = "bookEdition", cascade = CascadeType.ALL)
+    private List<StockTransaction> stockTransactions = new ArrayList<>();
 
     public boolean isDiscountActive() {
         if (discountPercentage == 0) {
