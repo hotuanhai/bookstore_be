@@ -59,4 +59,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("status") OrderStatus status,
             @Param("search") String search,
             Pageable pageable);
+
+    List<Order> findByStatusInAndOrderDateAfter(List<OrderStatus> statuses, LocalDateTime startDate);
 }

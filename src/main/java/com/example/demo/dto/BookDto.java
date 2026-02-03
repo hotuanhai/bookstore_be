@@ -1,5 +1,7 @@
 package com.example.demo.dto;
 
+import com.example.demo.dto.author.AuthorSummaryDto;
+import com.example.demo.dto.bookEdition.BookEditionDto;
 import com.example.demo.enums.BookStatus;
 import lombok.*;
 import java.util.Set;

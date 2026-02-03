@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.OrderDto;
+import com.example.demo.dto.bookEdition.BookEditionSalesDto;
+import com.example.demo.dto.genre.GenreSalesDto;
 import com.example.demo.entity.user.User;
 import com.example.demo.enums.OrderStatus;
 import com.example.demo.request.OrderRequest;
@@ -111,5 +113,20 @@ public class OrderController {
         return ResponseEntity.ok(
                 ApiResponse.success(order, "Order status updated successfully")
         );
+    }
+
+    @GetMapping("/top-selling-genres")
+    public ResponseEntity<ApiResponse<List<GenreSalesDto>>> getTopSellingGenres(
+            @RequestParam(defaultValue = "1m") String period){
+        List<GenreSalesDto> topGenres = orderService.getTopSellingGenres(period);
+        return ResponseEntity.ok(ApiResponse.success(topGenres, "Top selling genres retrieved successfully"));
+    }
+
+    @GetMapping("/top-selling-editions")
+    public ResponseEntity<ApiResponse<List<BookEditionSalesDto>>> getTopSellingEditions(
+            @RequestParam(defaultValue = "1m") String period,
+            @RequestParam(defaultValue = "10") int limit){
+        List<BookEditionSalesDto> topEditions = orderService.getTopSellingEditions(period, limit);
+        return ResponseEntity.ok(ApiResponse.success(topEditions, "Top selling editions retrieved successfully"));
     }
 }

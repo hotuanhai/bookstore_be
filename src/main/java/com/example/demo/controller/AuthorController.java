@@ -1,8 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.AuthorDto;
-import com.example.demo.dto.AuthorSummaryDto;
-import com.example.demo.dto.CommentDto;
+import com.example.demo.dto.author.AuthorDto;
+import com.example.demo.dto.author.AuthorSummaryDto;
 import com.example.demo.request.AuthorRequest;
 import com.example.demo.response.ApiResponse;
 import com.example.demo.service.AuthorService;

@@ -2,19 +2,17 @@ package com.example.demo.service;
 
 import com.example.demo.dao.BookEditionRepository;
 import com.example.demo.dao.BookRepository;
-import com.example.demo.dto.BookEditionDto;
+import com.example.demo.dto.bookEdition.BookEditionDto;
 import com.example.demo.entity.book.Book;
 import com.example.demo.entity.book.BookEdition;
 import com.example.demo.entity.user.User;
+import com.example.demo.enums.BookStatus;
 import com.example.demo.mapper.BookEditionMapper;
 import com.example.demo.enums.StockReason;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +21,26 @@ public class BookEditionService {
     private final BookRepository bookRepository;
     private final BookEditionRepository editionRepository;
     private final StockService stockService;
+
+    @Transactional
+    public void deleteBookEdition(Long bookId, Long editionId, User user) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+        BookEdition edition = editionRepository.findById(editionId)
+                .orElseThrow(() -> new RuntimeException("Edition not found"));
+        if (!edition.getBook().getId().equals(book.getId())) {
+            throw new RuntimeException("Edition does not belong to book");
+        }
+
+        // Check if already deleted
+//        if (edition.getStatus() == BookStatus.DELETED) {
+//            throw new RuntimeException("Edition is already deleted");
+//        }
+
+        // Soft delete by setting status
+        edition.setStatus(BookStatus.DELETED);
+        editionRepository.save(edition);
+    }
 
     @Transactional
     public BookEditionDto updateBookEdition(Long bookId, Long editionId,

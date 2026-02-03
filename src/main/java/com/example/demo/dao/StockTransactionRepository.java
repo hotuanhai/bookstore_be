@@ -1,5 +1,6 @@
 package com.example.demo.dao;
 
+import com.example.demo.dto.stock.TrendDataPoint;
 import com.example.demo.entity.StockTransaction;
 import com.example.demo.enums.TransactionType;
 import org.springframework.data.jpa.repository.JpaRepository;

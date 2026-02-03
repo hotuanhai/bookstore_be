@@ -1,5 +1,6 @@
-package com.example.demo.dto;
+package com.example.demo.dto.author;
 
+import com.example.demo.dto.BookSummaryDto;
 import lombok.*;
 import java.util.Set;
 

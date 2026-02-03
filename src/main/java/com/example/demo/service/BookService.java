@@ -5,7 +5,7 @@ import com.example.demo.dao.BookEditionRepository;
 import com.example.demo.dao.BookRepository;
 import com.example.demo.dao.GenreRepository;
 import com.example.demo.dto.BookDto;
-import com.example.demo.dto.BookEditionDto;
+import com.example.demo.dto.bookEdition.BookEditionDto;
 import com.example.demo.dto.BookSummaryDto;
 import com.example.demo.entity.Author;
 import com.example.demo.entity.book.Book;
@@ -22,7 +22,6 @@ import com.example.demo.mapper.BookMapper;
 import com.example.demo.request.BookRequest;
 import com.example.demo.enums.StockReason;
 import com.example.demo.request.EditionRequest;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -59,6 +58,10 @@ public class BookService {
                 .status(request.getStatus())
                 .genres(genres)
                 .build();
+
+        if (bookEditionRepository.existsByIsbn(request.getIsbn())) {
+            throw new DuplicateIsbnException("ISBN already exists: " + request.getIsbn());
+        }
 
         BookEdition edition = BookEdition.builder()
                 .name(request.getName())
@@ -199,11 +202,13 @@ public class BookService {
                 .collect(Collectors.toSet());
 
         // Handle sort
+        String field = "id";  // default
+        String direction = "asc";  // default
         Sort sortObj = Sort.unsorted();
         if (sort != null && !sort.isEmpty()) {
             String[] sortParams = sort.split(",");
-            String field = sortParams[0];
-            String direction = sortParams.length > 1 ? sortParams[1] : "asc";
+            field = sortParams[0];
+            direction = sortParams.length > 1 ? sortParams[1] : "asc";
 
             if ("latest".equals(field)) {
                 field = "b.id";
@@ -211,6 +216,8 @@ public class BookService {
                 field = "e.price";
             } else if ("newest".equals(field)) {
                 field = "e.publishedYear";
+            }else{
+                field = "b.id";
             }
 
             sortObj = direction.equalsIgnoreCase("desc")

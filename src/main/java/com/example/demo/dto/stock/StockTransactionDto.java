@@ -1,9 +1,10 @@
-package com.example.demo.dto;
+package com.example.demo.dto.stock;
 
 import com.example.demo.enums.StockReason;
 import com.example.demo.enums.TransactionType;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter

@@ -1,11 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.GenreDto;
+import com.example.demo.dto.genre.GenreDto;
 import com.example.demo.dto.MainGenreDto;
-import com.example.demo.entity.genre.Genre;
-import com.example.demo.entity.genre.MainGenre;
-import com.example.demo.mapper.GenreMapper;
-import com.example.demo.mapper.MainGenreMapper;
 import com.example.demo.request.GenreRequest;
 import com.example.demo.request.MainGenreRequest;
 import com.example.demo.response.ApiResponse;

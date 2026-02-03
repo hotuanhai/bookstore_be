@@ -1,8 +1,8 @@
 package com.example.demo.service;
 
 import com.example.demo.dao.AuthorRepository;
-import com.example.demo.dto.AuthorDto;
-import com.example.demo.dto.AuthorSummaryDto;
+import com.example.demo.dto.author.AuthorDto;
+import com.example.demo.dto.author.AuthorSummaryDto;
 import com.example.demo.entity.Author;
 import com.example.demo.exception.AuthorNotFoundException;
 import com.example.demo.mapper.AuthorMapper;

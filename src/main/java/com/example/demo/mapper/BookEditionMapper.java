@@ -1,6 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.dto.BookEditionDto;
+import com.example.demo.dto.bookEdition.BookEditionDto;
 import com.example.demo.entity.book.BookEdition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

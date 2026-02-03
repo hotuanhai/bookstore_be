@@ -1,16 +1,12 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.GenreDto;
-import com.example.demo.dto.MainGenreDto;
-import com.example.demo.entity.genre.Genre;
-import com.example.demo.entity.genre.MainGenre;
+import com.example.demo.dto.genre.GenreDto;
+import com.example.demo.dto.genre.GenreSalesDto;
 import com.example.demo.request.GenreRequest;
 import com.example.demo.response.ApiResponse;
 import com.example.demo.service.GenreService;
-import com.example.demo.service.MainGenreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,5 +54,4 @@ public class GenreController {
         genreService.moveGenre(genreId, targetMainGenreId);
         return ResponseEntity.ok(ApiResponse.success(null, "Genre moved successfully"));
     }
-
 }

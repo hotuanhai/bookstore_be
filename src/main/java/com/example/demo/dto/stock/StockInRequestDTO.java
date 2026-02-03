@@ -1,4 +1,4 @@
-package com.example.demo.dto;
+package com.example.demo.dto.stock;
 
 import com.example.demo.enums.StockReason;
 import jakarta.validation.constraints.NotNull;

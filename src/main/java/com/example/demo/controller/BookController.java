@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.BookDto;
-import com.example.demo.dto.BookEditionDto;
+import com.example.demo.dto.bookEdition.BookEditionDto;
 import com.example.demo.dto.BookSummaryDto;
 import com.example.demo.entity.user.User;
 import com.example.demo.request.BookRequest;

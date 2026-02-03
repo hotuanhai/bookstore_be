@@ -8,7 +8,11 @@ import com.example.demo.dto.CartDto;
 import com.example.demo.dto.CartItemDto;
 import com.example.demo.dto.OrderDto;
 import com.example.demo.dto.OrderItemDto;
+import com.example.demo.dto.bookEdition.BookEditionSalesDto;
+import com.example.demo.dto.genre.GenreSalesDto;
+import com.example.demo.entity.book.Book;
 import com.example.demo.entity.book.BookEdition;
+import com.example.demo.entity.genre.Genre;
 import com.example.demo.entity.order.Order;
 import com.example.demo.entity.order.OrderItem;
 import com.example.demo.entity.user.User;
@@ -17,6 +21,7 @@ import com.example.demo.enums.OrderStatus;
 import com.example.demo.enums.PaymentStatus;
 import com.example.demo.exception.EditionNotFoundException;
 import com.example.demo.request.OrderRequest;
+import com.example.demo.util.TimeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,9 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -257,7 +260,78 @@ public class OrderService {
         }
     }
 
-    // Helper method to map entity to DTO
+    @Transactional(readOnly = true)
+    public List<GenreSalesDto> getTopSellingGenres(String period) {
+        LocalDateTime startDate = TimeUtils.calculateStartDate(period);
+
+        List<Order> orders = orderRepository.findByStatusInAndOrderDateAfter(
+                Arrays.asList(OrderStatus.DELIVERED, OrderStatus.SHIPPED, OrderStatus.PROCESSING),
+                startDate
+        );
+
+        Map<Genre, Integer> genreSalesMap = new HashMap<>();
+
+        for (Order order : orders) {
+            for (OrderItem item : order.getOrderItems()) {
+                Book book = item.getEdition().getBook();
+                Set<Genre> genres = book.getGenres();
+
+                for (Genre genre : genres) {
+                    genreSalesMap.merge(genre, item.getQuantity(), Integer::sum);
+                }
+            }
+        }
+
+        return genreSalesMap.entrySet().stream()
+                .sorted(Map.Entry.<Genre, Integer>comparingByValue().reversed())
+                .limit(6)
+                .map(entry -> GenreSalesDto.builder()
+                        .genreId(entry.getKey().getId())
+                        .genreName(entry.getKey().getName())
+                        .totalSold(entry.getValue())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookEditionSalesDto> getTopSellingEditions(String period, int limit) {
+        LocalDateTime startDate = TimeUtils.calculateStartDate(period);
+
+        List<Order> orders = orderRepository.findByStatusInAndOrderDateAfter(
+                Arrays.asList(OrderStatus.DELIVERED, OrderStatus.SHIPPED, OrderStatus.PROCESSING),
+                startDate
+        );
+
+        Map<BookEdition, Integer> editionSalesMap = new HashMap<>();
+
+        for (Order order : orders) {
+            for (OrderItem item : order.getOrderItems()) {
+                BookEdition edition = item.getEdition();
+                editionSalesMap.merge(edition, item.getQuantity(), Integer::sum);
+            }
+        }
+
+        return editionSalesMap.entrySet().stream()
+                .sorted(Map.Entry.<BookEdition, Integer>comparingByValue().reversed())
+                .limit(limit > 0 ? limit : 10)
+                .map(entry -> {
+                    BookEdition edition = entry.getKey();
+
+                    return BookEditionSalesDto.builder()
+                            .id(edition.getId())
+                            .editionId(edition.getId())
+                            .title(edition.getBook().getTitle())
+                            .imageUrl(edition.getImageUrl())
+                            .price(edition.getPrice())
+                            .status(edition.getStatus())
+                            .totalSold(entry.getValue())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+    }
+
+    // Helper method
     private OrderDto mapToDto(Order order) {
         OrderDto dto = OrderDto.builder()
                 .id(order.getId())

@@ -2,7 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dao.GenreRepository;
 import com.example.demo.dao.MainGenreRepository;
-import com.example.demo.dto.GenreDto;
+import com.example.demo.dto.genre.GenreDto;
 import com.example.demo.entity.genre.Genre;
 import com.example.demo.entity.genre.MainGenre;
 import com.example.demo.mapper.GenreMapper;
@@ -110,5 +110,4 @@ public class GenreService {
 
         genreRepository.save(genre);
     }
-
 }

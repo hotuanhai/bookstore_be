@@ -4,7 +4,9 @@ import com.example.demo.dao.BookEditionRepository;
 import com.example.demo.dao.OrderItemRepository;
 import com.example.demo.dao.OrderRepository;
 import com.example.demo.dao.StockTransactionRepository;
-import com.example.demo.dto.StockTransactionDto;
+import com.example.demo.dto.stock.SalesRevenueTrend;
+import com.example.demo.dto.stock.StockTransactionDto;
+import com.example.demo.dto.stock.TrendDataPoint;
 import com.example.demo.entity.StockTransaction;
 import com.example.demo.entity.book.BookEdition;
 import com.example.demo.entity.order.Order;
@@ -14,14 +16,20 @@ import com.example.demo.enums.StockReason;
 import com.example.demo.enums.TransactionType;
 import com.example.demo.exception.InsufficientStockException;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.util.TimeUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service

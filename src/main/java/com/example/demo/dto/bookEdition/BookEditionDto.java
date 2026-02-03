@@ -1,4 +1,4 @@
-package com.example.demo.dto;
+package com.example.demo.dto.bookEdition;
 
 import com.example.demo.enums.BookStatus;
 import com.example.demo.enums.EditionFormat;

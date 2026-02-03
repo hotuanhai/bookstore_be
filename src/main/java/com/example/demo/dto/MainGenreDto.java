@@ -1,5 +1,6 @@
 package com.example.demo.dto;
 
+import com.example.demo.dto.genre.GenreDto;
 import lombok.*;
 import java.util.Set;
 

@@ -46,6 +46,13 @@ public class CartService {
     public CartDto getCart(Long userId) {
         Cart cart = cartRepository.findByUserIdWithItems(userId)
                 .orElseGet(() -> getOrCreateCart(userId));
+        // Auto-cleanup invalid items
+        boolean hasChanges = autoCleanupCart(cart);
+
+        if (hasChanges) {
+            cart = cartRepository.save(cart);
+        }
+
         return cartMapper.toDto(cart);
     }
 
@@ -215,5 +222,46 @@ public class CartService {
 
         cartRepository.save(cart);
         return cartMapper.toDto(cart);
+    }
+
+    // helper
+    /**
+     * Auto-cleanup cart items that are invalid:
+     * - Remove items that are no longer AVAILABLE
+     * - Reduce quantity if stock is less than cart quantity
+     *
+     * @return true if any changes were made
+     */
+    private boolean autoCleanupCart(Cart cart) {
+        boolean hasChanges = false;
+        List<CartItem> itemsToRemove = new ArrayList<>();
+
+        for (CartItem item : cart.getCartItems()) {
+            BookEdition edition = item.getEdition();
+
+            if (edition == null || edition.getStatus() != BookStatus.AVAILABLE) {
+                // Remove unavailable items
+                itemsToRemove.add(item);
+                hasChanges = true;
+            } else if (edition.getStock() < item.getQuantity()) {
+                if (edition.getStock() == 0) {
+                    // Remove if out of stock
+                    itemsToRemove.add(item);
+                } else {
+                    // Reduce quantity to available stock
+                    item.setQuantity(edition.getStock());
+                    cartItemRepository.save(item);
+                }
+                hasChanges = true;
+            }
+        }
+
+        // Remove items marked for removal
+        for (CartItem item : itemsToRemove) {
+            cart.removeItem(item);
+            cartItemRepository.delete(item);
+        }
+
+        return hasChanges;
     }
 }
